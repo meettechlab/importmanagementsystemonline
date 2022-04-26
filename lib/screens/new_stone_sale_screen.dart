@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../model/company.dart';
 import '../model/stone.dart';
+import 'dashboard.dart';
 
 class NewStoneSaleScreen extends StatefulWidget {
   const NewStoneSaleScreen({Key? key}) : super(key: key);
@@ -44,21 +45,7 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
     _process = false;
     _count = 1;
 
-    FirebaseFirestore.instance
-        .collection('stones')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-          final _docList = [];
-          _docList.add(doc);
 
-          if (_docList.isNotEmpty) {
-            setState(() {
-              _invoice = int.parse(_docList.last["invoice"]) + 1;
-            });
-        }
-      }
-    });
 
 
     FirebaseFirestore.instance
@@ -137,7 +124,7 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: truckCountEditingController,
             keyboardType: TextInputType.number,
@@ -243,7 +230,7 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: cftEditingController,
             keyboardType: TextInputType.name,
@@ -279,7 +266,7 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -647,6 +634,20 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Add New Sale'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -727,8 +728,19 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
       final ref = FirebaseFirestore.instance.collection("stones").doc();
       final _stock = cftEditingController.text;
       final _totalSale = (double.parse(cftEditingController.text) *
-              double.parse(rateEditingController.text))
+              double.parse(rateEditingController.text)).floor()
           .toString();
+
+      FirebaseFirestore.instance
+          .collection('stones')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if (_invoice <= int.parse(doc["invoice"])) {
+            _invoice = int.parse(doc["invoice"]) + 1;
+          }
+        }
+
       Stone stoneModel = Stone();
       stoneModel.date =     DateFormat('dd-MMM-yyyy').format(_date!);
     stoneModel.truckCount =   truckCountEditingController.text;
@@ -746,32 +758,50 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
     stoneModel.stock =     _stock;
     stoneModel.year =      DateFormat('MMM-yyyy').format(_date!);
     stoneModel.docID =ref.id;
-    await ref.set(stoneModel.toMap());
+     ref.set(stoneModel.toMap());
 
-    final ref2= FirebaseFirestore.instance.collection("companies").doc();
-    Company companyModel = Company();
-    companyModel.id=   "stonesale" + _invoice.toString();
-    companyModel.name = _chosenCompanyName!;
-    companyModel.contact =_chosenCompanyContact!;
-    companyModel.address =  "0";
-    companyModel.credit =    "0";
-    companyModel.debit =  _totalSale;
-    companyModel.remarks =  "Stone Sale";
-    companyModel.invoice =  "2";
-    companyModel.paymentTypes =  "0";
-    companyModel.paymentInfo =  "0";
-    companyModel.date =   DateFormat('dd-MMM-yyyy').format(_date!);
-    companyModel.year =    DateFormat('MMM-yyyy').format(_date!);
-    companyModel.docID = ref2.id;
-    await   ref2.set(companyModel.toMap());
-      setState(() {
-        _process = false;
-        _count = 1;
+        int _invoiceC = 1;
+
+        FirebaseFirestore.instance
+            .collection('companies')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          for (var doc in querySnapshot.docs) {
+            if (doc["name"] == _chosenCompanyName) {
+              if (_invoiceC <= int.parse(doc["invoice"])) {
+                _invoiceC = int.parse(doc["invoice"]) + 1;
+              }            }
+          }
+
+          final ref2 = FirebaseFirestore.instance.collection("companies").doc();
+          Company companyModel = Company();
+          companyModel.id = "stonesale" + _invoice.toString();
+          companyModel.name = _chosenCompanyName!;
+          companyModel.contact = _chosenCompanyContact!;
+          companyModel.address = "0";
+          companyModel.credit = _totalSale;
+          companyModel.debit ="0" ;
+          companyModel.remarks = "Stone Sale : " + cftEditingController.text + " CFT";
+          companyModel.invoice = _invoiceC.toString();
+          companyModel.paymentTypes = "0";
+          companyModel.paymentInfo = "0";
+          companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          companyModel.year = DateFormat('MMM-yyyy').format(_date!);
+          companyModel.docID = ref2.id;
+          ref2.set(companyModel.toMap());
+          setState(() {
+            _process = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.green, content: Text("Entry Added!!")));
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => StoneSaleScreen()));
+        });
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.green, content: Text("Entry Added!!")));
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => StoneSaleScreen()));
+
+
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));

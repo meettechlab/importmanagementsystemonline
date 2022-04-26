@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
@@ -8,6 +9,7 @@ import '../model/company.dart';
 import '../model/csale.dart';
 import 'crusher_sale_s_screen.dart';
 import 'crusher_sale_t_screen.dart';
+import 'dashboard.dart';
 
 class CrusherSaleEntryScreen extends StatefulWidget {
   const CrusherSaleEntryScreen({Key? key}) : super(key: key);
@@ -30,7 +32,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
   DateTime? _date;
   bool? _process;
   int? _count;
-  int? _invoice;
+  int _invoice = 1;
   final _portTypes = ['Shutarkandi', 'Tamabil'];
   String? _chosenPort;
 
@@ -44,26 +46,20 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
     super.initState();
     _process = false;
     _count = 1;
-    final tempSaleBox = Hive.box('cSales').values;
-    if (tempSaleBox.isEmpty) {
-      setState(() {
-        _invoice = 1;
-      });
-    } else {
-      setState(() {
-        _invoice = int.parse(tempSaleBox.last.invoice) + 1;
-      });
-    }
 
-    final _tempCompanyList = Hive.box('companies')
-        .values
-        .where((c) => c.invoice.toLowerCase().contains("1"))
-        .toList();
-    for (int i = 0; i < _tempCompanyList.length; i++) {
-      final _tempCompany = _tempCompanyList[i] as Company;
-      _companyNameList.add(_tempCompany.name);
-      _companyContactList.add(_tempCompany.contact);
-    }
+    FirebaseFirestore.instance
+        .collection('companies')
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      for (var doc in querySnapshot.docs) {
+        if(doc["invoice"] == "1"){
+          setState(() {
+            _companyNameList.add(doc["name"]);
+            _companyContactList.add(doc["contact"]);
+          });
+        }
+      }
+    });
   }
 
   @override
@@ -160,7 +156,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -197,7 +193,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: cftEditingController,
             keyboardType: TextInputType.name,
@@ -233,7 +229,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -269,7 +265,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: threeToFourEditingController,
             keyboardType: TextInputType.name,
@@ -304,7 +300,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: oneToSixEditingController,
             keyboardType: TextInputType.name,
@@ -339,7 +335,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: halfEditingController,
             keyboardType: TextInputType.name,
@@ -374,7 +370,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: fiveToTenEditingController,
             keyboardType: TextInputType.name,
@@ -568,16 +564,17 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
               setState(() {
                 _chosenCompanyName = newValue;
 
-                final _tempCompanyList = Hive.box('companies')
-                    .values
-                    .where((c) => c.invoice.toLowerCase().contains("1"))
-                    .toList();
-                for (int i = 0; i < _tempCompanyList.length; i++) {
-                  final _tempCompany = _tempCompanyList[i] as Company;
-                  if (_tempCompany.name.contains(newValue!)) {
-                    _chosenCompanyContact = _tempCompany.contact;
+                FirebaseFirestore.instance
+                    .collection('companies')
+                    .get()
+                    .then((QuerySnapshot querySnapshot) {
+                  for (var doc in querySnapshot.docs) {
+                    if(doc["invoice"] == "1" && doc["name"] == newValue ){
+                      _chosenCompanyContact = doc["contact"];
+                    }
                   }
-                }
+                });
+
               });
             }));
 
@@ -616,16 +613,16 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
               setState(() {
                 _chosenCompanyContact = newValue;
 
-                final _tempCompanyList = Hive.box('companies')
-                    .values
-                    .where((c) => c.invoice.toLowerCase().contains("1"))
-                    .toList();
-                for (int i = 0; i < _tempCompanyList.length; i++) {
-                  final _tempCompany = _tempCompanyList[i] as Company;
-                  if (_tempCompany.contact.contains(newValue!)) {
-                    _chosenCompanyName = _tempCompany.name;
+                FirebaseFirestore.instance
+                    .collection('companies')
+                    .get()
+                    .then((QuerySnapshot querySnapshot) {
+                  for (var doc in querySnapshot.docs) {
+                    if(doc["invoice"] == "1" && doc["contact"] == newValue ){
+                      _chosenCompanyName = doc["name"];
+                    }
                   }
-                }
+                });
               });
             }));
 
@@ -633,6 +630,20 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Add New Sale'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -712,94 +723,167 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
     );
   }
 
-  void AddData() {
+  void AddData() async {
     if (_formKey.currentState!.validate() && _date != null) {
-      final cSaleBox = Hive.box('cSales');
+      final ref = FirebaseFirestore.instance.collection("cSales").doc();
       final _price = (double.parse(cftEditingController.text) *
-              double.parse(rateEditingController.text))
+          double.parse(rateEditingController.text)).floor()
           .toString();
 
       if (_chosenPort == "Shutarkandi") {
-        final cSaleModel = CSale(
-            _invoice.toString(),
-            DateFormat('dd-MMM-yyyy').format(_date!),
-            truckCountEditingController.text,
-            cftEditingController.text,
-            rateEditingController.text,
-            _price,
-            threeToFourEditingController.text,
-            oneToSixEditingController.text,
-            halfEditingController.text,
-            fiveToTenEditingController.text,
-            remarksEditingController.text,
-            _chosenPort!,
-            _chosenCompanyName!,
-            _chosenCompanyContact!,
-            DateFormat('MMM-yyyy').format(_date!),
-            truckNumberEditingController.text);
-        cSaleBox.add(cSaleModel);
-        final companyModel = Company(
-            "crushersaleshutarkandi" + _invoice.toString(),
-            _chosenCompanyName!,
-            _chosenCompanyContact!,
-            "0",
-            "0",
-            _price,
-            "Crusher Sale Shutarkandi",
-            "2",
-            "0",
-            "0",
-            DateFormat('dd-MMM-yyyy').format(_date!),
-            DateFormat('MMM-yyyy').format(_date!));
-        Hive.box('companies').add(companyModel);
-      } else {
-        final cSaleModel = CSale(
-            _invoice.toString(),
-            DateFormat('dd-MMM-yyyy').format(_date!),
-            truckCountEditingController.text,
-            cftEditingController.text,
-            rateEditingController.text,
-            _price,
-            threeToFourEditingController.text,
-            oneToSixEditingController.text,
-            halfEditingController.text,
-            fiveToTenEditingController.text,
-            remarksEditingController.text,
-            _chosenPort!,
-            _chosenCompanyName!,
-            _chosenCompanyContact!,
-            DateFormat('MMM-yyyy').format(_date!),
-            truckNumberEditingController.text);
-        cSaleBox.add(cSaleModel);
-        final companyModel = Company(
-            "crushersaletamabil" + _invoice.toString(),
-            _chosenCompanyName!,
-            _chosenCompanyContact!,
-            "0",
-            "0",
-            _price,
-            "Crusher Sale Tamabil",
-            "2",
-            "0",
-            "0",
-            DateFormat('dd-MMM-yyyy').format(_date!),
-            DateFormat('MMM-yyyy').format(_date!));
-        Hive.box('companies').add(companyModel);
-      }
-      setState(() {
-        _process = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.green, content: Text("Entry Added!!")));
 
-      if (_chosenPort == "Shutarkandi") {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => CrusherSaleSScreen()));
+        FirebaseFirestore.instance
+            .collection('cSales')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          for (var doc in querySnapshot.docs) {
+            if (_invoice <= int.parse(doc["invoice"])) {
+              _invoice = int.parse(doc["invoice"]) + 1;
+            }
+          }
+
+
+          CSale cSaleModel = CSale();
+          cSaleModel.invoice = _invoice.toString();
+          cSaleModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          cSaleModel.truckCount = truckCountEditingController.text;
+          cSaleModel.cft = cftEditingController.text;
+          cSaleModel.rate = rateEditingController.text;
+          cSaleModel.price = _price;
+          cSaleModel.threeToFour = threeToFourEditingController.text;
+          cSaleModel.oneToSix = oneToSixEditingController.text;
+          cSaleModel.half = halfEditingController.text;
+          cSaleModel.fiveToTen = fiveToTenEditingController.text;
+          cSaleModel.remarks = remarksEditingController.text;
+          cSaleModel.port = _chosenPort!;
+          cSaleModel.buyerName = _chosenCompanyName!;
+          cSaleModel.buyerContact = _chosenCompanyContact!;
+          cSaleModel.year = DateFormat('MMM-yyyy').format(_date!);
+          cSaleModel.truckNumber = truckNumberEditingController.text;
+          cSaleModel.docID = ref.id;
+          ref.set(cSaleModel.toMap());
+
+          int _invoiceC = 1;
+
+          FirebaseFirestore.instance
+              .collection('companies')
+              .get()
+              .then((QuerySnapshot querySnapshot) {
+            for (var doc in querySnapshot.docs) {
+              if (_invoiceC <= int.parse(doc["invoice"])) {
+                _invoiceC = int.parse(doc["invoice"]) + 1;
+              }
+            }
+
+            final ref2 = FirebaseFirestore.instance.collection("companies").doc();
+            Company companyModel = Company();
+            companyModel.id = "crushersaleshutarkandi" + _invoice.toString();
+            companyModel.name = _chosenCompanyName!;
+            companyModel.contact = _chosenCompanyContact!;
+            companyModel.address = "0";
+            companyModel.credit = _price;
+            companyModel.debit = "0";
+            companyModel.remarks = "Crusher Sale Shutarkandi : " +  cftEditingController.text + " CFT";
+            companyModel.invoice = _invoiceC.toString();
+            companyModel.paymentTypes = "0";
+            companyModel.paymentInfo = "0";
+            companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+            companyModel.year = DateFormat('MMM-yyyy').format(_date!);
+            companyModel.docID = ref2.id;
+            ref2.set(companyModel.toMap());
+
+            setState(() {
+              _process = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                backgroundColor: Colors.green, content: Text("Entry Added!!")));
+
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => CrusherSaleSScreen()));
+          });
+        });
+
+
+
+
       } else {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => CrusherSaleTScreen()));
+
+        FirebaseFirestore.instance
+            .collection('cSales')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          for (var doc in querySnapshot.docs) {
+            if (_invoice <= int.parse(doc["invoice"])) {
+              _invoice = int.parse(doc["invoice"]) + 1;
+            }
+          }
+
+          CSale cSaleModel = CSale();
+          cSaleModel.invoice = _invoice.toString();
+          cSaleModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          cSaleModel.truckCount = truckCountEditingController.text;
+          cSaleModel.cft = cftEditingController.text;
+          cSaleModel.rate = rateEditingController.text;
+          cSaleModel.price = _price;
+          cSaleModel.threeToFour = threeToFourEditingController.text;
+          cSaleModel.oneToSix = oneToSixEditingController.text;
+          cSaleModel.half = halfEditingController.text;
+          cSaleModel.fiveToTen = fiveToTenEditingController.text;
+          cSaleModel.remarks = remarksEditingController.text;
+          cSaleModel.port = _chosenPort!;
+          cSaleModel.buyerName = _chosenCompanyName!;
+          cSaleModel.buyerContact = _chosenCompanyContact!;
+          cSaleModel.year = DateFormat('MMM-yyyy').format(_date!);
+          cSaleModel.truckNumber = truckNumberEditingController.text;
+          cSaleModel.docID = ref.id;
+          ref.set(cSaleModel.toMap());
+
+          int _invoiceC = 1;
+
+          FirebaseFirestore.instance
+              .collection('companies')
+              .get()
+              .then((QuerySnapshot querySnapshot) {
+            for (var doc in querySnapshot.docs) {
+              if (doc["name"] == _chosenCompanyName) {
+                if (_invoiceC <= int.parse(doc["invoice"])) {
+                  _invoiceC = int.parse(doc["invoice"]) + 1;
+                }
+              }
+            }
+
+
+            final ref2 = FirebaseFirestore.instance.collection("companies").doc();
+            Company companyModel = Company();
+            companyModel.id = "crushersaletamabil" + _invoice.toString();
+            companyModel.name = _chosenCompanyName!;
+            companyModel.contact = _chosenCompanyContact!;
+            companyModel.address = "0";
+            companyModel.credit = _price;
+            companyModel.debit = "0";
+            companyModel.remarks = "Crusher Sale Tamabil : " +  cftEditingController.text + " CFT";
+            companyModel.invoice = _invoiceC.toString();
+            companyModel.paymentTypes = "0";
+            companyModel.paymentInfo = "0";
+            companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+            companyModel.year = DateFormat('MMM-yyyy').format(_date!);
+            companyModel.docID = ref2.id;
+            ref2.set(companyModel.toMap());
+
+            setState(() {
+              _process = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                backgroundColor: Colors.green, content: Text("Entry Added!!")));
+
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => CrusherSaleTScreen()));
+
+          });
+        });
+
       }
-    } else {
+    }else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));
       setState(() {

@@ -7,6 +7,7 @@ import 'package:importmanagementsystemonline/screens/single_company_screen.dart'
 
 import '../model/company.dart';
 import 'create_company_screen.dart';
+import 'dashboard.dart';
 
 class CompanyListScreen extends StatefulWidget {
   const CompanyListScreen({Key? key}) : super(key: key);
@@ -31,6 +32,20 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
         title: Text(
             'Clients/Suppliers List'
         ),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -74,7 +89,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date" , descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -121,18 +136,37 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
             IconButton(
               onPressed: (){
 
-                FirebaseFirestore.instance
-                    .collection('companies')
-                    .get()
-                    .then((QuerySnapshot querySnapshot) {
-                  for (var doc in querySnapshot.docs) {
-                    if(doc["name"] == company["name"]){
-                      setState(() {
-                        doc.reference.delete();
-                      });
-                    }
-                  }
-                });
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context)=>AlertDialog(
+                      title: Text("Confirm"),
+                      content: Text("Do you want to delete it?"),
+                      actions: [
+                         IconButton(
+                            icon: new Icon(Icons.close),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            }),
+                         IconButton(
+                            icon: new Icon(Icons.delete),
+                            onPressed: () {
+                              FirebaseFirestore.instance
+                                  .collection('companies')
+                                  .get()
+                                  .then((QuerySnapshot querySnapshot) {
+                                for (var doc in querySnapshot.docs) {
+                                  if(doc["name"] == company["name"]){
+                                    setState(() {
+                                      doc.reference.delete();
+                                      Navigator.pop(context);
+                                    });
+                                  }
+                                }
+                              });
+                            })
+                      ],
+                    )
+                );
               },
               icon: Icon(Icons.delete, color: Colors.red,),
             )

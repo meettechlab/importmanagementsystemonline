@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../api/pdf_employee.dart';
 import '../model/employee.dart';
 import '../model/invoiceEmployee.dart';
+import 'dashboard.dart';
 import 'employee_salary_entry.dart';
 import 'employee_salary_update.dart';
 
@@ -234,7 +235,7 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -259,6 +260,20 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Employee Name : ${widget.employeeModel["name"]}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -307,6 +322,9 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
 
 
   void generatePdf() async {
+    final _list = <EmployeeItem>[];
+    final _docList = [];
+
 
     FirebaseFirestore.instance
         .collection('employees')
@@ -316,7 +334,6 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
         if(doc["name"].toString().toLowerCase() == widget.employeeModel.get("name").toString().toLowerCase()){
 
 
-          final _list = <EmployeeItem>[];
           _list.add(new EmployeeItem(
             doc["date"],
             doc["salaryAdvanced"],
@@ -325,14 +342,15 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
           ));
 
 
-          final _docList = [];
           _docList.add(doc);
 
-          final invoice = InvoiceEmployee(_docList.first["name"], _docList.first["post"],
-              _docList.first["salary"], _balance.toString(),_due.toString(), _list);
-          final pdfFile =  PdfEmployee.generate(invoice);
+
         }
       }
+
+      final invoice = InvoiceEmployee(_docList.first["name"], _docList.first["post"],
+          _docList.first["salary"], _balance.toString(),_due.toString(), _list);
+      final pdfFile =  PdfEmployee.generate(invoice);
     });
 
 

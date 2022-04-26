@@ -6,6 +6,7 @@ import 'package:importmanagementsystemonline/screens/single_coal_lc_screen.dart'
 import 'package:intl/intl.dart';
 
 import '../model/coal.dart';
+import 'dashboard.dart';
 
 class SingleCoalEntryScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> coalModel;
@@ -31,40 +32,61 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
   DateTime? _date;
   bool? _process;
   int? _count;
-  int? _invoice;
+  int _invoice=2;
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
 
   @override
   void initState() {
     super.initState();
     _process = false;
     _count = 1;
-
-    FirebaseFirestore.instance
-        .collection('coals')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        if(doc["lc"] == widget.coalModel.get("lc")  ){
-          final _docList = [];
-          _docList.add(doc);
-
-          if (double.parse(_docList.last["invoice"]) > 0) {
-            setState(() {
-              _invoice = int.parse(_docList.last["invoice"]) + 1;
-            });
-          }
-
-        }
-      }
-    });
+    _chosenPort = widget.coalModel["port"];
   }
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -224,7 +246,7 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: tonEditingController,
             keyboardType: TextInputType.name,
@@ -350,6 +372,20 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("LC Number ${widget.coalModel.get("lc")}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -377,14 +413,7 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [tonField, portField],
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [truckCountField, truckNumberField],
+                      children: [truckCountField, truckNumberField, tonField],
                     ),
                     SizedBox(
                       height: 20,
@@ -408,14 +437,27 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
   }
 
   void AddData() async {
-    if (_formKey.currentState!.validate() && _date != null) {
+    if (_formKey.currentState!.validate() && _date != null && _chosenPort != null) {
       final ref = FirebaseFirestore.instance.collection("coals").doc();
+
+
+      FirebaseFirestore.instance
+          .collection('coals')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if(doc["lc"] == widget.coalModel.get("lc")  ){
+            if (_invoice <= int.parse(doc["invoice"])) {
+              _invoice = int.parse(doc["invoice"]) + 1;
+            }          }
+        }
+
       Coal coalModel = Coal();
     coalModel.lc =   widget.coalModel.get("lc");
     coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
     coalModel.invoice =  _invoice.toString();
     coalModel.supplierName = widget.coalModel.get("supplierName");
-    coalModel.port = portEditingController.text;
+    coalModel.port = _chosenPort;
     coalModel.ton =  tonEditingController.text;
     coalModel.rate = "0";
     coalModel.totalPrice = "0";
@@ -429,23 +471,24 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
     coalModel.truckNumber = truckNumberEditingController.text;
     coalModel.contact  = widget.coalModel.get("contact");
       coalModel.docID = ref.id;
-      await ref.set(coalModel.toMap());
-
-      FirebaseFirestore.instance
-          .collection('coals')
-          .get()
-          .then((QuerySnapshot querySnapshot) {
-        for (var doc in querySnapshot.docs) {
-          if(doc.id == ref.id){
-            setState(() {
-              _process = false;
-              _count = 1;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Added!!")));
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: doc)));
+       ref.set(coalModel.toMap());
+        FirebaseFirestore.instance
+            .collection('coals')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          for (var doc in querySnapshot.docs) {
+            if(doc.id == ref.id){
+              setState(() {
+                _process = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Added!!")));
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: doc)));
+            }
           }
-        }
+        });
       });
+
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));

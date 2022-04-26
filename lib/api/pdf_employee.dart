@@ -12,12 +12,13 @@ class PdfEmployee {
 
     pdf.addPage(MultiPage(
       build: (context) => [
+        buildFooter(),
         buildTitle(invoice),
         buildInvoice(invoice),
         Divider(),
         buildTotal(invoice),
       ],
-      footer: (context) => buildFooter(),
+     // footer: (context) => buildFooter(),
     ));
 
     return PdfApi.saveDocument(
@@ -63,7 +64,7 @@ class PdfEmployee {
     return Table.fromTextArray(
       headers: headers,
       data: data,
-      border: null,
+
       headerStyle: TextStyle(fontWeight: FontWeight.bold),
       headerDecoration: BoxDecoration(color: PdfColors.grey300),
       cellHeight: 30,
@@ -112,20 +113,24 @@ class PdfEmployee {
 
   static Widget buildFooter() =>
       Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Divider(),
-        SizedBox(height: 2 * PdfPageFormat.mm),
+
         buildFooterText(
-            title: 'Organisation :',
-            value: 'M/S Priya Enterprise & B.N. Traders'),
+            title: '',
+            value: 'M/S Priya Enterprise coal & stone importer & distributor', isBold: true),
         SizedBox(height: 1 * PdfPageFormat.mm),
-        buildFooterText(title: 'Contact :', value: '+8801711-362096'),
+        buildFooterText(title: 'Contact :', value: '+8801711-362096 , +8801712-403015 , +8801716-882817', isBold: false),
         SizedBox(height: 1 * PdfPageFormat.mm),
-        buildFooterText(title: 'Address :', value: 'Laldighirpar, Sylhet'),
+        buildFooterText(title: 'Address :', value: 'Laldighirpar, Sylhet', isBold: false),
         SizedBox(height: 1 * PdfPageFormat.mm),
-        buildFooterText(title: 'Developed By :', value: 'MeetTech Lab '),
+        buildFooterText(title: 'Email :', value: 'sawonseu@gmail.com', isBold: false),
+        SizedBox(height: 1 * PdfPageFormat.mm),
+        buildFooterText(title: 'Developed By :', value: 'MeetTech Lab ', isBold: false),
+        buildFooterText(title: 'Contact :', value: '+8801755-460159 ', isBold: false),
+        SizedBox(height: 2 * PdfPageFormat.mm),
+        Divider(),
       ]);
 
-  static buildFooterText({required String title, required String value}) {
+  static buildFooterText({required String title, required String value , required bool isBold}) {
     final style = TextStyle(fontWeight: FontWeight.bold);
 
     return Row(
@@ -134,7 +139,7 @@ class PdfEmployee {
         children: [
           Text(title, style: style),
           SizedBox(width: 2 * PdfPageFormat.mm),
-          Text(value),
+          isBold ?Text(value, style:  style): Text(value),
         ]);
   }
 }

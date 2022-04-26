@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Coal {
     String? lc;
     String? date;
@@ -19,6 +21,7 @@ class Coal {
     String? contact;
     String? docID;
 
+
   Coal({
     this.lc,
     this.date,
@@ -37,7 +40,8 @@ class Coal {
     this.truckCount,
     this.truckNumber,
     this.contact,
-    this.docID
+    this.docID,
+
   });
 
 
@@ -60,7 +64,8 @@ class Coal {
       truckCount: map['truckCount'],
       truckNumber: map['truckNumber'],
       contact: map['contact'],
-      docID: map['docID']
+      docID: map['docID'],
+
     );
   }
 
@@ -83,7 +88,7 @@ class Coal {
       'truckCount': truckCount,
       'truckNumber': truckNumber,
       'contact': contact,
-      'docID': docID
+      'docID': docID,
     };
   }
 }

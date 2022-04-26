@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../model/company.dart';
 import '../model/employee.dart';
+import 'dashboard.dart';
 
 class CompanyPaymentScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> companyModel;
@@ -29,7 +30,7 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
   String? _chosenPayment;
   bool? _process;
   int? _count;
-  int? _invoice;
+  int _invoice = 2;
   bool _selection = false;
   String _selectionString = "Credit";
   String _debit = "0";
@@ -40,24 +41,7 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
     super.initState();
     _process = false;
     _count = 1;
-    FirebaseFirestore.instance
-        .collection('companies')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        if(doc["name"] == widget.companyModel.get("name")  ){
-          final _docList = [];
-          _docList.add(doc);
 
-          if (_docList.isNotEmpty) {
-            setState(() {
-              _invoice = int.parse(_docList.last["invoice"]) + 1;
-            });
-          }
-
-        }
-      }
-    });
   }
 
   @override
@@ -159,7 +143,7 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: debitCreditEditingController,
             keyboardType: TextInputType.number,
@@ -339,6 +323,20 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Client/Supplier Name : ${widget.companyModel.get("name")}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -400,6 +398,10 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
                     SizedBox(
                       height: 10,
                     ),
+                    Text("Credit = Money spent from company And Debit = Money came in company", style: TextStyle(color: Colors.grey),),
+                    SizedBox(
+                      height: 10,
+                    ),
                   ],
                 ),
               ),
@@ -418,6 +420,20 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
       } else {
         _credit = debitCreditEditingController.text;
       }
+
+
+      FirebaseFirestore.instance
+          .collection('companies')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if(doc["name"] == widget.companyModel.get("name")  ){
+            if (_invoice <= int.parse(doc["invoice"])) {
+              _invoice = int.parse(doc["invoice"]) + 1;
+            }          }
+        }
+
+
       Company companyModel = Company();
       companyModel.id = "check";
       companyModel.name = widget.companyModel["name"];
@@ -432,29 +448,31 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
       companyModel.date =  DateFormat('dd-MMM-yyyy').format(_date!);
       companyModel.year =DateFormat('MMM-yyyy').format(_date!);
       companyModel.docID =ref.id;
-      await ref.set(companyModel.toMap());
+       ref.set(companyModel.toMap());
 
-      FirebaseFirestore.instance
-          .collection('companies')
-          .get()
-          .then((QuerySnapshot querySnapshot) {
-        for (var doc in querySnapshot.docs) {
-          if (doc.id == ref.id) {
-            setState(() {
-              _process = false;
-              _count = 1;
-            });
+        FirebaseFirestore.instance
+            .collection('companies')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          for (var doc in querySnapshot.docs) {
+            if (doc.id == ref.id) {
+              setState(() {
+                _process = false;
+              });
 
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                backgroundColor: Colors.green, content: Text("Entry Added!!")));
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        SingleCompanyScreen(companyModel: doc)));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.green, content: Text("Entry Added!!")));
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          SingleCompanyScreen(companyModel: doc)));
+            }
           }
-        }
+        });
       });
+
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));

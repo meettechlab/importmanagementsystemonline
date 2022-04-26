@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../model/coal.dart';
 import '../model/company.dart';
+import 'dashboard.dart';
 
 class CoalLCCreateScreen extends StatefulWidget {
   const CoalLCCreateScreen({Key? key}) : super(key: key);
@@ -26,13 +27,16 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
   final _paymentTypes = ['Cash', 'Bank'];
   String? _chosenPayment;
 
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
+
   List<String> _companyNameList = [];
   String? _chosenCompanyName;
   List<String> _companyContactList = [];
   String? _chosenCompanyContact;
   bool? _process;
   int? _count;
-
 
   @override
   void initState() {
@@ -45,7 +49,7 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        if(doc["invoice"] == "1"){
+        if (doc["invoice"] == "1") {
           setState(() {
             _companyNameList.add(doc["name"]);
             _companyContactList.add(doc["contact"]);
@@ -53,11 +57,46 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
         }
       }
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -104,7 +143,7 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
                     : DateFormat('dd-MMM-yyyy').format(_date!),
                 textAlign: TextAlign.center,
                 style:
-                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           )
@@ -115,7 +154,9 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
+            ],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -217,7 +258,6 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
               ),
             )));
 
-
     final portField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
@@ -258,7 +298,9 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
         child: TextFormField(
             cursorColor: Colors.blue,
             autofocus: false,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
+            ],
             controller: tonEditingController,
             keyboardType: TextInputType.name,
             validator: (value) {
@@ -289,10 +331,9 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
               ),
             )));
 
-
     final addButton = Material(
-      elevation: (_process!)? 0 : 5,
-      color: (_process!)? Colors.blue.shade800 :Colors.blue,
+      elevation: (_process!) ? 0 : 5,
+      color: (_process!) ? Colors.blue.shade800 : Colors.blue,
       borderRadius: BorderRadius.circular(30),
       child: MaterialButton(
         padding: EdgeInsets.fromLTRB(
@@ -307,32 +348,45 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
             _process = true;
             _count = (_count! - 1);
           });
-          (_count! < 0) ?      ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red,content: Text("Wait Please!!")))
-              :
-          AddData();
+          (_count! < 0)
+              ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.red, content: Text("Wait Please!!")))
+              : AddData();
         },
-        child:(_process!)? Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Processing',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold,),
-            ),
-            SizedBox(width: 20,),
-            Center(child: SizedBox(height:15, width: 15,child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2,))),
-          ],
-        )
+        child: (_process!)
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Processing',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Center(
+                      child: SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ))),
+                ],
+              )
             : Text(
-          'Add New Entry',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+                'Add New Entry',
+                textAlign: TextAlign.center,
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
       ),
     );
-
-
 
     DropdownMenuItem<String> buildMenuName(String item) => DropdownMenuItem(
         value: item,
@@ -374,14 +428,13 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
                     .get()
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
-                    if(doc["invoice"] == "1" && doc["name"] == newValue ){
+                    if (doc["invoice"] == "1" && doc["name"] == newValue) {
                       _chosenCompanyContact = doc["contact"];
                     }
                   }
                 });
               });
             }));
-
 
     DropdownMenuItem<String> buildMenuContact(String item) => DropdownMenuItem(
         value: item,
@@ -418,13 +471,12 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
               setState(() {
                 _chosenCompanyContact = newValue;
 
-
                 FirebaseFirestore.instance
                     .collection('companies')
                     .get()
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
-                    if(doc["invoice"] == "1" && doc["contact"] == newValue ){
+                    if (doc["invoice"] == "1" && doc["contact"] == newValue) {
                       _chosenCompanyName = doc["name"];
                     }
                   }
@@ -436,6 +488,20 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Create New Coal LC'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                  color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -458,36 +524,23 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
                     SizedBox(
                       height: 20,
                     ),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        nameDropdown,
-                        contactDropdown
-                      ],
+                      children: [nameDropdown, contactDropdown],
                     ),
                     SizedBox(
                       height: 20,
                     ),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        truckCountField,
-                        truckNumberField
-                      ],
+                      children: [truckCountField, truckNumberField],
                     ),
-
                     SizedBox(
                       height: 20,
                     ),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        portField,
-                        tonField
-                      ],
+                      children: [portDropdown, tonField],
                     ),
                     SizedBox(
                       height: 20,
@@ -507,50 +560,80 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
   }
 
   void AddData() async {
-    if (_formKey.currentState!.validate() && _date != null && _chosenCompanyContact != null && _chosenCompanyName != null ) {
-      final ref = FirebaseFirestore.instance.collection("coals").doc();
-      final _invoice = "1";
-      Coal coalModel = Coal();
-      coalModel.lc = lcNumberEditingController.text;
-      coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
-      coalModel.invoice = _invoice;
-      coalModel.supplierName = _chosenCompanyName!;
-      coalModel.port = portEditingController.text;
-      coalModel.ton =  tonEditingController.text;
-      coalModel.rate = "0";
-      coalModel.totalPrice = "0";
-      coalModel.paymentType = "0";
-      coalModel.paymentInformation = "0";
-      coalModel.credit = "0";
-      coalModel.debit = "0";
-      coalModel.remarks = "0";
-      coalModel.year = DateFormat('MMM-yyyy').format(_date!);
-      coalModel.truckCount = truckCountEditingController.text;
-      coalModel.truckNumber = truckNumberEditingController.text;
-      coalModel.contact  = _chosenCompanyContact!;
-      coalModel.docID = ref.id;
-      await ref.set(coalModel.toMap());
-
+    if (_formKey.currentState!.validate() &&
+        _date != null &&
+        _chosenCompanyContact != null &&
+        _chosenCompanyName != null && _chosenPort !=null) {
+      bool _unique = true;
       FirebaseFirestore.instance
           .collection('coals')
           .get()
           .then((QuerySnapshot querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          if(doc.id == ref.id){
-
-            setState(() {
-              _process = false;
-              _count = 1;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Added!!")));
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: doc)));
+          if (doc["lc"].toString().toLowerCase() ==
+              lcNumberEditingController.text.toString().toLowerCase()) {
+            _unique = false;
           }
         }
+
+        if (_unique) {
+          final ref = FirebaseFirestore.instance.collection("coals").doc();
+          final _invoice = "1";
+          Coal coalModel = Coal();
+          coalModel.lc = lcNumberEditingController.text;
+          coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          coalModel.invoice = _invoice;
+          coalModel.supplierName = _chosenCompanyName!;
+          coalModel.port = _chosenPort;
+          coalModel.ton = tonEditingController.text;
+          coalModel.rate = "0";
+          coalModel.totalPrice = "0";
+          coalModel.paymentType = "0";
+          coalModel.paymentInformation = "0";
+          coalModel.credit = "0";
+          coalModel.debit = "0";
+          coalModel.remarks = "0";
+          coalModel.year = DateFormat('MMM-yyyy').format(_date!);
+          coalModel.truckCount = truckCountEditingController.text;
+          coalModel.truckNumber = truckNumberEditingController.text;
+          coalModel.contact = _chosenCompanyContact!;
+          coalModel.docID = ref.id;
+          ref.set(coalModel.toMap());
+
+           FirebaseFirestore.instance
+              .collection('coals')
+              .get()
+              .then((QuerySnapshot querySnapshot) {
+            for (var doc in querySnapshot.docs) {
+              if (doc.id == ref.id) {
+                setState(() {
+                  _process = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: Colors.green,
+                    content: Text("Entry Added!!")));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            SingleCoalLCScreen(coalModel: doc)));
+              }
+            }
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(
+                  "This LC name is already exist. Please create an unique one!!")));
+          setState(() {
+            _process = false;
+            _count = 1;
+          });
+        }
       });
-
-
-    }else{
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.red,content: Text("Something Wrong!!")));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.red, content: Text("Something Wrong!!")));
       setState(() {
         _process = false;
         _count = 1;

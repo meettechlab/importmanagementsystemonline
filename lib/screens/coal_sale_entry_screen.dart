@@ -8,6 +8,7 @@ import '../model/coal.dart';
 import '../model/company.dart';
 import '../model/stone.dart';
 import 'coal_sale_screen.dart';
+import 'dashboard.dart';
 
 class CoalSaleEntryScreen extends StatefulWidget {
   const CoalSaleEntryScreen({Key? key}) : super(key: key);
@@ -18,7 +19,6 @@ class CoalSaleEntryScreen extends StatefulWidget {
 
 class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
   final _formKey = GlobalKey<FormState>();
-  final portEditingController = new TextEditingController();
   final tonEditingController = new TextEditingController();
   final rateEditingController = new TextEditingController();
   final paymentInformationEditingController = new TextEditingController();
@@ -33,6 +33,10 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
   int? _count;
   int _invoice = 2;
 
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
+
   List<String> _companyNameList = [];
   String? _chosenCompanyName;
   List<String> _companyContactList = [];
@@ -44,23 +48,6 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
     _process = false;
     _count = 1;
 
-    FirebaseFirestore.instance
-        .collection('coals')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        if(doc["lc"] == "sale"  ){
-          final _docList = [];
-          _docList.add(doc);
-
-          if (_docList.isNotEmpty) {
-            setState(() {
-              _invoice = int.parse(_docList.last["invoice"]) + 1;
-            });
-          }
-        }
-      }
-    });
     FirebaseFirestore.instance
         .collection('companies')
         .get()
@@ -79,6 +66,42 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuPort(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuPort).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -133,46 +156,13 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
       ),
     );
 
-    final portField = Container(
-        width: MediaQuery.of(context).size.width / 4,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            autofocus: false,
-            controller: portEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Port cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              portEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
-              ),
-              labelText: 'Port',
-              labelStyle: TextStyle(color: Colors.blue),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            )));
+
 
     final tonField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: tonEditingController,
             keyboardType: TextInputType.name,
@@ -208,7 +198,7 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -242,7 +232,7 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -577,6 +567,20 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Add New Sale'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -592,7 +596,7 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        portField,
+                        portDropdown,
                         pickDate,
                       ],
                     ),
@@ -649,18 +653,33 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
     if (_formKey.currentState!.validate() &&
         _chosenPayment != null &&
         _chosenCompanyContact != null &&
-        _chosenCompanyName != null) {
+        _chosenCompanyName != null && _chosenPort != null) {
       final ref = FirebaseFirestore.instance.collection("coals").doc();
       final _totalSale = (double.parse(tonEditingController.text) *
-              double.parse(rateEditingController.text))
+              double.parse(rateEditingController.text)).floor()
           .toString();
+
+
+      FirebaseFirestore.instance
+          .collection('coals')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if(doc["lc"] == "sale"  ){
+            if (_invoice <= int.parse(doc["invoice"])) {
+              _invoice = int.parse(doc["invoice"]) + 1;
+            }
+          }
+        }
+
+
 
       Coal coalModel = Coal();
       coalModel.lc =  "sale";
       coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
       coalModel.invoice = _invoice.toString();
       coalModel.supplierName = _chosenCompanyName!;
-      coalModel.port = portEditingController.text;
+      coalModel.port = _chosenPort;
       coalModel.ton =  tonEditingController.text;
       coalModel.rate =          rateEditingController.text;
       coalModel.totalPrice = _totalSale;
@@ -674,33 +693,47 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
       coalModel.truckNumber = truckNumberEditingController.text;
       coalModel.contact  = _chosenCompanyContact!;
       coalModel.docID = ref.id;
-      await ref.set(coalModel.toMap());
+       ref.set(coalModel.toMap());
 
+        int _invoiceC = 1;
 
-      final ref2= FirebaseFirestore.instance.collection("companies").doc();
-      Company companyModel = Company();
-      companyModel.id=   "coalsale" + _invoice.toString();
-      companyModel.name = _chosenCompanyName!;
-      companyModel.contact =_chosenCompanyContact!;
-      companyModel.address =  "0";
-      companyModel.credit =    "0";
-      companyModel.debit =  _totalSale;
-      companyModel.remarks =  "Coal Sale";
-      companyModel.invoice =  "2";
-      companyModel.paymentTypes =  "0";
-      companyModel.paymentInfo =  "0";
-      companyModel.date =   DateFormat('dd-MMM-yyyy').format(_date!);
-      companyModel.year =    DateFormat('MMM-yyyy').format(_date!);
-      companyModel.docID = ref2.id;
-      await   ref2.set(companyModel.toMap());
-      setState(() {
-        _process = false;
-        _count = 1;
+        FirebaseFirestore.instance
+            .collection('companies')
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          for (var doc in querySnapshot.docs) {
+            if (doc["name"] == _chosenCompanyName) {
+              if (_invoiceC <= int.parse(doc["invoice"])) {
+                _invoiceC = int.parse(doc["invoice"]) + 1;
+              }
+            }
+          }
+
+          final ref2 = FirebaseFirestore.instance.collection("companies").doc();
+          Company companyModel = Company();
+          companyModel.id = "coalsale" + _invoice.toString();
+          companyModel.name = _chosenCompanyName!;
+          companyModel.contact = _chosenCompanyContact!;
+          companyModel.address = "0";
+          companyModel.credit = _totalSale ;
+          companyModel.debit = "0";
+          companyModel.remarks = "Coal Sale : " + tonEditingController.text + " Ton";
+          companyModel.invoice = _invoiceC.toString();
+          companyModel.paymentTypes = "0";
+          companyModel.paymentInfo = "0";
+          companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          companyModel.year = DateFormat('MMM-yyyy').format(_date!);
+          companyModel.docID = ref2.id;
+          ref2.set(companyModel.toMap());
+          setState(() {
+            _process = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.green, content: Text("Entry Added!!")));
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => CoalSaleScreen()));
+        });
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.green, content: Text("Entry Added!!")));
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => CoalSaleScreen()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));

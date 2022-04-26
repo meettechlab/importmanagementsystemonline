@@ -10,6 +10,7 @@ import '../model/company.dart';
 import '../model/invoiceCompany.dart';
 import 'company_payment_screen.dart';
 import 'company_update_screen.dart';
+import 'dashboard.dart';
 
 class SingleCompanyScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> companyModel;
@@ -22,7 +23,7 @@ class SingleCompanyScreen extends StatefulWidget {
 }
 
 class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
-  double _due = 0.0;
+  int _due = 0;
 
   @override
   void initState() {
@@ -36,7 +37,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
         if (doc["name"].toString().toLowerCase() ==
             widget.companyModel.get("name").toString().toLowerCase()) {
           setState(() {
-            _due = (_due - double.parse(doc["credit"]) + double.parse(doc["debit"]));
+            _due = (_due - double.parse(doc["credit"]) + double.parse(doc["debit"])).floor();
           });
         }
       }
@@ -196,7 +197,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
                   SizedBox(
                     width: 70,
                   ),
-                  (company.id == "check")
+                  (company["id"] == "check")
                       ? IconButton(
                           onPressed: () {
                             FirebaseFirestore.instance
@@ -222,7 +223,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
                           ),
                         )
                       : Text(""),
-                  (company.id == "check")
+                  (company["id"] == "check")
                       ? IconButton(
                           onPressed: () {
                             FirebaseFirestore.instance
@@ -256,7 +257,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -268,7 +269,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
                   ...snapshot.data!.docs
                       .where((QueryDocumentSnapshot<Object?> element) =>
                   element["name"].toString().toLowerCase() ==
-                      widget.companyModel.get("name"))
+                      widget.companyModel.get("name").toString().toLowerCase())
                       .map((QueryDocumentSnapshot<Object?> data) {
                     return buildSingleItem(data);
                   })
@@ -283,6 +284,20 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Client/Supplier Name : ${widget.companyModel.get("name")}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -323,6 +338,9 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
   }
 
   void generatePdf() async {
+    final _list = <CompanyItem>[];
+    final _docList = [];
+
     FirebaseFirestore.instance
         .collection('companies')
         .get()
@@ -331,7 +349,6 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
         if(doc["name"].toString().toLowerCase() == widget.companyModel.get("name").toString().toLowerCase()){
 
 
-          final _list = <CompanyItem>[];
           _list.add(new CompanyItem(
               doc["date"],
               doc["debit"],
@@ -341,14 +358,15 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
               doc["remarks"],));
 
 
-          final _docList = [];
           _docList.add(doc);
 
-          final invoice = InvoiceCompany(_docList.first["name"], _docList.first["contact"],
-              _docList.first["address"],_due.toString(), _list);
-          final pdfFile =  PdfCompany.generate(invoice);
+
         }
       }
+
+      final invoice = InvoiceCompany(_docList.first["name"], _docList.first["contact"],
+          _docList.first["address"],_due.toString(), _list);
+      final pdfFile =  PdfCompany.generate(invoice);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../model/company.dart';
 import '../model/stone.dart';
+import 'dashboard.dart';
 
 class StoneUpdateScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> stoneModel;
@@ -142,7 +143,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: truckCountEditingController,
             keyboardType: TextInputType.number,
@@ -248,7 +249,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: cftEditingController,
             keyboardType: TextInputType.name,
@@ -284,7 +285,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -652,6 +653,20 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Add New Sale'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -734,7 +749,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
           .doc(widget.stoneModel.get("docID"));
       final _stock = cftEditingController.text;
       final _totalSale = (double.parse(cftEditingController.text) *
-              double.parse(rateEditingController.text))
+              double.parse(rateEditingController.text)).floor()
           .toString();
       Stone stoneModel = Stone();
       stoneModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
@@ -756,6 +771,8 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
       await ref.set(stoneModel.toMap());
 
       String? _docID;
+      String? _invoiceC;
+
 
       FirebaseFirestore.instance
           .collection('companies')
@@ -764,9 +781,11 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
         for (var doc in querySnapshot.docs) {
           if (doc["id"] == "stonesale" + widget.stoneModel["invoice"]) {
             _docID = doc.id;
+            _invoiceC = doc["invoice"];
+
           }
         }
-      });
+
 
       final ref2 =
           FirebaseFirestore.instance.collection("companies").doc(_docID);
@@ -775,25 +794,25 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
       companyModel.name = _chosenCompanyName!;
       companyModel.contact = _chosenCompanyContact!;
       companyModel.address = "0";
-      companyModel.credit = "0";
-      companyModel.debit = _totalSale;
-      companyModel.remarks = "Stone Sale";
-      companyModel.invoice = "2";
+      companyModel.credit = _totalSale;
+      companyModel.debit = "0";
+      companyModel.remarks = "Stone Sale : " + cftEditingController.text + " CFT";
+      companyModel.invoice = _invoiceC;
       companyModel.paymentTypes = "0";
       companyModel.paymentInfo = "0";
       companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
       companyModel.year = DateFormat('MMM-yyyy').format(_date!);
       companyModel.docID = ref2.id;
-      await ref2.set(companyModel.toMap());
+       ref2.set(companyModel.toMap());
 
       setState(() {
         _process = false;
-        _count = 1;
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.green, content: Text("Entry Updated!!")));
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => StoneSaleScreen()));
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));

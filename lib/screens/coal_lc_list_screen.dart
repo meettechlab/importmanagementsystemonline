@@ -7,6 +7,7 @@ import '../model/coal.dart';
 import '../model/company.dart';
 import '../model/stone.dart';
 import 'coal_lc_create_screen.dart';
+import 'dashboard.dart';
 
 class CoalLCListScreen extends StatefulWidget {
   const CoalLCListScreen({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class CoalLCListScreen extends StatefulWidget {
 
 class _CoalLCListScreenState extends State<CoalLCListScreen> {
   double _totalStock = 0.0;
-  double _totalAmount = 0.0;
+  int _totalAmount = 0;
 
   @override
   void initState() {
@@ -34,12 +35,12 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
       for (var doc in querySnapshot.docs) {
         if(doc["lc"] != "sale"){
           setState(() {
-            _totalStock = (_totalStock + double.parse(doc["ton"]));
-            _totalAmount = (_totalAmount + double.parse(doc["credit"]));
+            _totalStock = double.parse((_totalStock + double.parse(doc["ton"])).toStringAsFixed(3));
+            _totalAmount = (_totalAmount + double.parse(doc["credit"])).floor();
           });
         }else{
           setState(() {
-            _totalStock = (_totalStock - double.parse(doc["ton"]));
+            _totalStock = double.parse((_totalStock - double.parse(doc["ton"])).toStringAsFixed(3));
           });
         }
       }
@@ -52,6 +53,20 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Coal LC List'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -126,7 +141,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -163,12 +178,71 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
                 SizedBox(
                   width: 20,
                 ),
-                Text(
-                  coal["lc"],
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Text(
+                      "Date",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      coal["date"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 70,
+                ),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Text(
+                      "LC",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      coal["lc"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 70,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "Port",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      coal["port"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 70,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "Supplier Name",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      coal["supplierName"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 70,
                 ),
                 IconButton(
                   onPressed: () async {

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../model/company.dart';
 import '../model/lc.dart';
+import 'dashboard.dart';
 import 'individual_lc_history_screen.dart';
 
 class LCNewScreen extends StatefulWidget {
@@ -33,6 +34,10 @@ class _LCNewScreenState extends State<LCNewScreen> {
   DateTime? _date;
   final _paymentTypes = ['Cash', 'Bank'];
   String? _chosenPayment;
+
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
 
   List<String> _companyNameList = [];
   String? _chosenCompanyName;
@@ -64,6 +69,42 @@ class _LCNewScreenState extends State<LCNewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -156,7 +197,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -264,12 +305,12 @@ class _LCNewScreenState extends State<LCNewScreen> {
         child: TextFormField(
             cursorColor: Colors.blue,
             autofocus: false,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             controller: cftEditingController,
             keyboardType: TextInputType.name,
             validator: (value) {
               if (value!.isEmpty) {
-                return ("CFT cannot be empty!!");
+                return ("Ton cannot be empty!!");
               }
               return null;
             },
@@ -284,7 +325,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
                 20,
                 15,
               ),
-              labelText: 'CFT',
+              labelText: 'Ton',
               labelStyle: TextStyle(color: Colors.blue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -299,7 +340,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -444,7 +485,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: lcOpenPriceEditingController,
             keyboardType: TextInputType.number,
@@ -480,7 +521,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: dutyCostEditingController,
             keyboardType: TextInputType.number,
@@ -516,7 +557,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: speedMoneyEditingController,
             keyboardType: TextInputType.number,
@@ -638,42 +679,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
       ),
     );
 
-    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
-        value: item,
-        child: Text(
-          item,
-          style: TextStyle(color: Colors.blue),
-        ));
 
-    final paymentDropdown = Container(
-        width: MediaQuery.of(context).size.width / 4,
-        child: DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            ),
-            items: _paymentTypes.map(buildMenuItem).toList(),
-            hint: Text(
-              'Select Payment',
-              style: TextStyle(color: Colors.blue),
-            ),
-            value: _chosenPayment,
-            onChanged: (newValue) {
-              setState(() {
-                _chosenPayment = newValue;
-              });
-            }));
 
     DropdownMenuItem<String> buildMenuName(String item) => DropdownMenuItem(
         value: item,
@@ -775,6 +781,20 @@ class _LCNewScreenState extends State<LCNewScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Create New LC'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -816,7 +836,7 @@ class _LCNewScreenState extends State<LCNewScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [cftField, portField],
+                      children: [cftField, portDropdown],
                     ),
                     SizedBox(
                       height: 20,
@@ -843,54 +863,78 @@ class _LCNewScreenState extends State<LCNewScreen> {
     if (_formKey.currentState!.validate() &&
         _date != null &&
         _chosenCompanyContact != null &&
-        _chosenCompanyName != null) {
-
-      final ref = FirebaseFirestore.instance.collection("lcs").doc();
-      final _stock = cftEditingController.text;
-      final _invoice = "1";
-      //final _purchaseBalance = (double.parse(cftEditingController.text) * double.parse(rateEditingController.text)).toString();
-      //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
-      LC lcModel = LC();
-      lcModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
-      lcModel.truckCount =  truckCountEditingController.text;
-      lcModel.truckNumber =    truckNumberEditingController.text;
-      lcModel.invoice =     _invoice;
-      lcModel.port =     portEditingController.text;
-      lcModel.cft =      cftEditingController.text;
-      lcModel.rate =     "0";
-      lcModel.stockBalance =     _stock;
-      lcModel.sellerName =    _chosenCompanyName!;
-      lcModel.sellerContact =                _chosenCompanyContact!;
-      lcModel.paymentType =         "0";
-      lcModel.paymentInformation =     "0";
-      lcModel.purchaseBalance =        "0";
-      lcModel.lcOpenPrice =         "0";
-      lcModel.dutyCost =        "0";
-      lcModel.speedMoney =       "0";
-      lcModel.remarks =    remarksEditingController.text;
-      lcModel.lcNumber =      lcNumberEditingController.text;
-      lcModel.totalBalance =        "0";
-      lcModel.year =      DateFormat('MMM-yyyy').format(_date!);
-      lcModel.docID = ref.id;
-      await ref.set(lcModel.toMap());
+        _chosenCompanyName != null && _chosenPort != null) {
+      bool _unique = true;
 
       FirebaseFirestore.instance
           .collection('lcs')
           .get()
           .then((QuerySnapshot querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          if(doc.id == ref.id){
+          if(doc["lcNumber"].toString().toLowerCase() == lcNumberEditingController.text.toString().toLowerCase() ){
+            _unique = false;
+          }
+        }
 
-            setState(() {
-              _process = false;
-              _count = 1;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Added!!")));
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        IndividualLCHistoryScreen(lcModel: doc)));          }
+        if (_unique) {
+          final ref = FirebaseFirestore.instance.collection("lcs").doc();
+          final _stock = cftEditingController.text;
+          final _invoice = "1";
+          //final _purchaseBalance = (double.parse(cftEditingController.text) * double.parse(rateEditingController.text)).toString();
+          //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
+          LC lcModel = LC();
+          lcModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          lcModel.truckCount = truckCountEditingController.text;
+          lcModel.truckNumber = truckNumberEditingController.text;
+          lcModel.invoice = _invoice;
+          lcModel.port = _chosenPort;
+          lcModel.cft = cftEditingController.text;
+          lcModel.rate = "0";
+          lcModel.stockBalance = _stock;
+          lcModel.sellerName = _chosenCompanyName!;
+          lcModel.sellerContact = _chosenCompanyContact!;
+          lcModel.paymentType = "0";
+          lcModel.paymentInformation = "0";
+          lcModel.purchaseBalance = "0";
+          lcModel.lcOpenPrice = "0";
+          lcModel.dutyCost = "0";
+          lcModel.speedMoney = "0";
+          lcModel.remarks = remarksEditingController.text;
+          lcModel.lcNumber = lcNumberEditingController.text;
+          lcModel.totalBalance = "0";
+          lcModel.year = DateFormat('MMM-yyyy').format(_date!);
+          lcModel.docID = ref.id;
+          ref.set(lcModel.toMap());
+
+          FirebaseFirestore.instance
+              .collection('lcs')
+              .get()
+              .then((QuerySnapshot querySnapshot) {
+            for (var doc in querySnapshot.docs) {
+              if (doc.id == ref.id) {
+                setState(() {
+                  _process = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: Colors.green,
+                    content: Text("Entry Added!!")));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            IndividualLCHistoryScreen(lcModel: doc)));
+              }
+            }
+          });
+        }else{
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(
+                  "This LC name is already exist. Please create an unique one!!")));
+          setState(() {
+            _process = false;
+            _count = 1;
+          });
         }
       });
     } else {

@@ -12,6 +12,7 @@ import '../api/pdf_coal.dart';
 import '../model/coal.dart';
 import '../model/company.dart';
 import '../model/invoiceCoal.dart';
+import 'dashboard.dart';
 
 class SingleCoalLCScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> coalModel;
@@ -25,7 +26,7 @@ class SingleCoalLCScreen extends StatefulWidget {
 
 class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
   double _totalStock = 0.0;
-  double _totalAmount = 0.0;
+  int _totalAmount = 0;
   final rateEditingController = new TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool? _process;
@@ -47,15 +48,15 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
         if (doc["lc"].toString().toLowerCase() ==
             widget.coalModel.get("lc").toString().toLowerCase()) {
           setState(() {
-            _totalStock = (double.parse(_totalStock.toString()) +
-                double.parse(doc["ton"]));
+            _totalStock = double.parse((double.parse(_totalStock.toString()) +
+                double.parse(doc["ton"])).toStringAsFixed(3));
           });
 
           final _docList = [];
           _docList.add(doc);
 
           if (double.parse(_docList.last["totalPrice"]) > 0) {
-            _totalAmount = double.parse(_docList.last["totalPrice"]);
+            _totalAmount = double.parse(_docList.last["totalPrice"]).floor();
             disFAB = true;
           }
 
@@ -71,7 +72,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -120,7 +121,14 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
             _process = true;
             _count = (_count! - 1);
           });
-          (_count! < 0)
+          disFAB?_process = false: null;
+          disFAB?_count = 1:null;
+          setState(() {
+
+          });
+          disFAB? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.green,
+              content: Text("LC Closed!!"))) :  (_count! < 0)
               ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   backgroundColor: Colors.red, content: Text("Please Wait!!")))
               : AddData();
@@ -350,7 +358,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -362,7 +370,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
                   ...snapshot.data!.docs
                       .where((QueryDocumentSnapshot<Object?> element) =>
                           element["lc"].toString().toLowerCase() ==
-                          widget.coalModel.get("lc"))
+                          widget.coalModel.get("lc").toString().toLowerCase() )
                       .map((QueryDocumentSnapshot<Object?> data) {
                     return buildSingleItem(data);
                   })
@@ -431,6 +439,20 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("LC Number ${widget.coalModel.get("lc")}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -479,7 +501,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
     if (_formKey.currentState!.validate()) {
 
       final _totalPrice = (double.parse(_totalStock.toString()) *
-              double.parse(rateEditingController.text))
+              double.parse(rateEditingController.text)).floor()
           .toString();
       //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
       final ref = FirebaseFirestore.instance.collection("coals").doc();
@@ -505,33 +527,50 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
  await ref.set(coalModel.toMap());
 
 
-    final ref2= FirebaseFirestore.instance.collection("companies").doc();
-    Company companyModel = Company();
-   companyModel.id= "coalstock" + widget.coalModel.get("lc");
-    companyModel.name = widget.coalModel.get("supplierName");
-    companyModel.contact = widget.coalModel.get("contact");
-   companyModel.address =  "0";
-   companyModel.credit =  _totalPrice;
-   companyModel.debit =  "0";
-   companyModel.remarks =  "Coal Purchase :" + widget.coalModel.get("lc");
-   companyModel.invoice =  "2";
-   companyModel.paymentTypes =  "0";
-   companyModel.paymentInfo =  "0";
-  companyModel.date =   widget.coalModel.get("date");
-   companyModel.year =  "0";
-   companyModel.docID = ref2.id;
-await   ref2.set(companyModel.toMap());
+      int _invoiceC = 1;
+
+      FirebaseFirestore.instance
+          .collection('companies')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if (doc["name"] == widget.coalModel.get("supplierName")) {
+            if (_invoiceC <= int.parse(doc["invoice"])) {
+              _invoiceC = int.parse(doc["invoice"]) + 1;
+            }
+          }
+        }
 
 
-    setState(() {
-    _totalAmount = double.parse(_totalPrice);
-    disFAB = true;
-    rateEditingController.clear();
-    _process = false;
-    _count = 1;
-  });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.green, content: Text("LC Closed!!")));
+
+        final ref2 = FirebaseFirestore.instance.collection("companies").doc();
+        Company companyModel = Company();
+        companyModel.id = "coalstock" + widget.coalModel.get("lc");
+        companyModel.name = widget.coalModel.get("supplierName");
+        companyModel.contact = widget.coalModel.get("contact");
+        companyModel.address = "0";
+        companyModel.credit ="0" ;
+        companyModel.debit = _totalPrice;
+        companyModel.remarks = "Coal Purchase :" + widget.coalModel.get("lc") + " : " + _totalStock.toString() + " Ton";
+        companyModel.invoice = _invoiceC.toString();
+        companyModel.paymentTypes = "0";
+        companyModel.paymentInfo = "0";
+        companyModel.date = widget.coalModel.get("date");
+        companyModel.year = "0";
+        companyModel.docID = ref2.id;
+        ref2.set(companyModel.toMap());
+
+
+        setState(() {
+          _totalAmount = double.parse(_totalPrice).floor();
+          disFAB = true;
+          rateEditingController.clear();
+          _process = false;
+          _count = 1;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Colors.green, content: Text("LC Closed!!")));
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));
@@ -543,6 +582,9 @@ await   ref2.set(companyModel.toMap());
   }
 
   void generatePdf() async {
+    final _list = <CoalItem>[];
+   var rate ;
+
     FirebaseFirestore.instance
         .collection('coals')
         .get()
@@ -550,8 +592,6 @@ await   ref2.set(companyModel.toMap());
       for (var doc in querySnapshot.docs) {
         if(doc["lc"].toString().toLowerCase() == widget.coalModel.get("lc").toString().toLowerCase()){
 
-
-          final _list = <CoalItem>[];
           _list.add(new CoalItem(
               doc["date"],
               doc["truckCount"],
@@ -565,12 +605,19 @@ await   ref2.set(companyModel.toMap());
               doc["paymentInformation"],
               doc["remarks"]));
 
-        final invoice = InvoiceCoal(_totalStock.toString(), _totalAmount.toString(),
-            widget.coalModel.get("lc"), _list);
 
-        final pdfFile = PdfCoal.generate(invoice, false);
+          if(doc["rate"] != "0"){
+            rate = doc["rate"];
+          }
         }
       }
+
+
+
+      final invoice = InvoiceCoal(_totalStock.toString(), _totalAmount.toString(),
+          widget.coalModel.get("lc"), rate, _list);
+
+      final pdfFile = PdfCoal.generate(invoice, false);
     });
 
 

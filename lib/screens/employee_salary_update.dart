@@ -6,6 +6,7 @@ import 'package:importmanagementsystemonline/screens/single_employee_screen.dart
 import 'package:intl/intl.dart';
 
 import '../model/employee.dart';
+import 'dashboard.dart';
 
 class EmployeeSalaryUpdateScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?>  employeeModel;
@@ -106,7 +107,7 @@ class _EmployeeSalaryUpdateScreenState
     final salaryAdvancedField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: salaryAdvancedEditingController,
@@ -268,6 +269,20 @@ class _EmployeeSalaryUpdateScreenState
       appBar: AppBar(
         centerTitle: true,
         title: Text("Employee Name : ${widget.employeeModel["name"]}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -352,7 +367,6 @@ class _EmployeeSalaryUpdateScreenState
           if (doc.id == ref.id) {
             setState(() {
               _process = false;
-              _count = 1;
             });
 
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(

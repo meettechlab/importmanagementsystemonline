@@ -3,9 +3,10 @@ class InvoiceCoal{
   final String stock;
   final String amount;
   final String lc;
+  final String rate;
   final List<CoalItem> items;
 
-  InvoiceCoal(this.stock, this.amount, this.lc,this.items);
+  InvoiceCoal(this.stock, this.amount, this.lc,this.rate,this.items);
 }
 
 class CoalItem{

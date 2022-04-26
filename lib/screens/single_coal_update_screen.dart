@@ -6,6 +6,7 @@ import 'package:importmanagementsystemonline/screens/single_coal_lc_screen.dart'
 import 'package:intl/intl.dart';
 
 import '../model/coal.dart';
+import 'dashboard.dart';
 
 class SingleCoalUpdateScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> coalModel;
@@ -34,11 +35,16 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
   int? _count;
   int? _invoice;
 
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
+
   @override
   void initState() {
     super.initState();
     _process = false;
     _count = 1;
+
+    _chosenPort = widget.coalModel["port"];
 
     _invoice = int.parse(widget.coalModel.get("invoice"));
     _date = DateFormat("dd-MMM-yyyy").parse(widget.coalModel["date"]);
@@ -59,7 +65,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -219,7 +225,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: tonEditingController,
             keyboardType: TextInputType.name,
@@ -345,6 +351,20 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("LC Number ${widget.coalModel["lc"]}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -370,16 +390,10 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
                     SizedBox(
                       height: 20,
                     ),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [tonField, portField],
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [truckCountField, truckNumberField],
+                      children: [truckCountField, truckNumberField,tonField],
                     ),
                     SizedBox(
                       height: 20,
@@ -410,7 +424,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
       coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
       coalModel.invoice =  _invoice.toString();
       coalModel.supplierName = widget.coalModel.get("supplierName");
-      coalModel.port = portEditingController.text;
+      coalModel.port = _chosenPort;
       coalModel.ton =  tonEditingController.text;
       coalModel.rate = "0";
       coalModel.totalPrice = "0";
@@ -434,7 +448,6 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
           if(doc.id == ref.id){
             setState(() {
               _process = false;
-              _count = 1;
             });
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Updated!!")));
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: doc)));

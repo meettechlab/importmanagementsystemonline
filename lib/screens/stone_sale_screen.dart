@@ -10,6 +10,7 @@ import '../api/pdf_stone_sale.dart';
 import '../model/invoiceStoneSale.dart';
 import '../model/lc.dart';
 import '../model/stone.dart';
+import 'dashboard.dart';
 import 'individual_lc_entry_screen.dart';
 import 'new_stone_sale_screen.dart';
 
@@ -22,7 +23,7 @@ class StoneSaleScreen extends StatefulWidget {
 
 class _StoneSaleScreenState extends State<StoneSaleScreen> {
   double _totalStock = 0.0;
-  double _totalAmount = 0.0;
+  int _totalAmount = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -35,7 +36,7 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
       for (var doc in querySnapshot.docs) {
         setState(() {
           _totalStock =
-          (double.parse(_totalStock.toString()) + double.parse(doc["cft"]));
+         double.parse( (double.parse(_totalStock.toString()) + double.parse(doc["cft"])).toStringAsFixed(3));
         });
       }
     });
@@ -46,9 +47,9 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
       for (var doc in querySnapshot.docs) {
         setState(() {
           _totalStock =
-          (double.parse(_totalStock.toString()) - double.parse(doc["cft"]));
+      double.parse(    (double.parse(_totalStock.toString()) - double.parse(doc["cft"])).toStringAsFixed(3));
           _totalAmount = (double.parse(_totalAmount.toString()) +
-              double.parse(doc["totalSale"]));
+              double.parse(doc["totalSale"])).floor();
         });
       }
     });
@@ -109,6 +110,20 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Stone Border Sale List'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -145,7 +160,7 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -432,7 +447,13 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
         ),
       );
 
+
+
+
+
   void generatePdf() async {
+    final _list = <StoneSaleItem>[];
+    final _docList = [];
     FirebaseFirestore.instance
         .collection('stones')
         .get()
@@ -441,7 +462,7 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
 
 
 
-          final _list = <StoneSaleItem>[];
+
           _list.add(new StoneSaleItem(
             doc["date"],
             doc["truckCount"],
@@ -458,14 +479,13 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
           ));
 
 
-          final _docList = [];
+
           _docList.add(doc);
 
-          final invoice = InvoiceStoneSale(_list);
-
-          final pdfFile =  PdfStoneSale.generate(invoice);
-
       }
+      final invoice = InvoiceStoneSale(_list);
+
+      final pdfFile =  PdfStoneSale.generate(invoice);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

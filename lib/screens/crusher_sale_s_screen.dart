@@ -14,6 +14,7 @@ import '../model/invoiceCrusherStock.dart';
 import '../model/stone.dart';
 import 'crusher_sale_entry_screen.dart';
 import 'crusher_sale_update.dart';
+import 'dashboard.dart';
 import 'individual_lc_entry_screen.dart';
 
 class CrusherSaleSScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class CrusherSaleSScreen extends StatefulWidget {
 
 class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
   double _totalStock = 0.0;
-  double _totalSale = 0.0;
+  int _totalSale = 0;
   double _threeToFour = 0.0;
   double _oneToSix = 0.0;
   double _half = 0.0;
@@ -41,15 +42,15 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
       for (var doc in querySnapshot.docs) {
        if( doc["port"].toLowerCase()==("shutarkandi")){
          setState(() {
-           _totalStock = (double.parse(_totalStock.toString()) +
-               double.parse(doc["totalBalance"]));
-           _threeToFour = (double.parse(_threeToFour.toString()) +
-               double.parse(doc["threeToFour"]));
+           _totalStock = double.parse((double.parse(_totalStock.toString()) +
+               double.parse(doc["totalBalance"])).toStringAsFixed(3));
+           _threeToFour = double.parse((double.parse(_threeToFour.toString()) +
+               double.parse(doc["threeToFour"])).toStringAsFixed(3));
            _oneToSix =
-           (double.parse(_oneToSix.toString()) + double.parse(doc["oneToSix"]));
-           _half = (double.parse(_half.toString()) + double.parse(doc["half"]));
-           _fiveToTen = (double.parse(_fiveToTen.toString()) +
-               double.parse(doc["fiveToTen"]));
+           double.parse((double.parse(_oneToSix.toString()) + double.parse(doc["oneToSix"])).toStringAsFixed(3));
+           _half =double.parse( (double.parse(_half.toString()) + double.parse(doc["half"])).toStringAsFixed(3));
+           _fiveToTen =double.parse( (double.parse(_fiveToTen.toString()) +
+               double.parse(doc["fiveToTen"])).toStringAsFixed(3));
          });
        }
       }
@@ -62,16 +63,16 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
         if( doc["port"].toLowerCase()==("shutarkandi")){
           setState(() {
             _totalStock =
-            (double.parse(_totalStock.toString()) - double.parse(doc["cft"]));
+            double.parse((double.parse(_totalStock.toString()) - double.parse(doc["cft"])).toStringAsFixed(3));
             _totalSale =
-            (double.parse(_totalSale.toString()) + double.parse(doc["price"]));
-            _threeToFour = (double.parse(_threeToFour.toString()) -
-                double.parse(doc["threeToFour"]));
+            (double.parse(_totalSale.toString()) + double.parse(doc["price"])).floor();
+            _threeToFour =double.parse( (double.parse(_threeToFour.toString()) -
+                double.parse(doc["threeToFour"])).toStringAsFixed(3));
             _oneToSix =
-            (double.parse(_oneToSix.toString()) - double.parse(doc["oneToSix"]));
-            _half = (double.parse(_half.toString()) - double.parse(doc["half"]));
-            _fiveToTen = (double.parse(_fiveToTen.toString()) -
-                double.parse(doc["fiveToTen"]));
+          double.parse(  (double.parse(_oneToSix.toString()) - double.parse(doc["oneToSix"])).toStringAsFixed(3));
+            _half =double.parse( (double.parse(_half.toString()) - double.parse(doc["half"])).toStringAsFixed(3));
+            _fiveToTen =double.parse( (double.parse(_fiveToTen.toString()) -
+                double.parse(doc["fiveToTen"])).toStringAsFixed(3));
           });
         }
       }
@@ -133,6 +134,20 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Crusher Sale ( Shutarkandi )'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -258,7 +273,7 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -538,6 +553,20 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
                         }
                       }
                     });
+
+
+                    FirebaseFirestore.instance
+                        .collection('companies')
+                        .get()
+                        .then((QuerySnapshot querySnapshot) {
+                      for (var doc in querySnapshot.docs) {
+                        if( doc["id"] ==  "crushersaleshutarkandi" + cSale["invoice"]){
+                          setState(() {
+                            doc.reference.delete();
+                          });
+                        }
+                      }
+                    });
                   },
                   icon: Icon(
                     Icons.delete,
@@ -551,6 +580,7 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
       );
 
   void generatePdf() async {
+    final _list = <CrusherSaleItem>[];
     FirebaseFirestore.instance
         .collection('cSales')
         .get()
@@ -558,13 +588,13 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
       for (var doc in querySnapshot.docs) {
         if(doc["port"].toLowerCase()==("shutarkandi")){
 
-          final _list = <CrusherSaleItem>[];
+
           _list.add(new CrusherSaleItem(
             doc["date"],
             doc["truckCount"],
             doc["port"],
-            doc["supplierName"],
-            doc["supplierContact"],
+            doc["buyerName"],
+            doc["buyerContact"],
             doc["cft"],
             doc["rate"],
             doc["price"],
@@ -574,22 +604,18 @@ class _CrusherSaleSScreenState extends State<CrusherSaleSScreen> {
             doc["fiveToTen"],
             doc["remarks"],
           ));
-
-
-          final invoice = InvoiceCrusherSale(
-              _threeToFour.toString(),
-              _oneToSix.toString(),
-              _half.toString(),
-              _fiveToTen.toString(),
-              _totalStock.toString(),
-              _totalSale.toString(),
-              _list);
-
-          final pdfFile =  PdfCrusherSale.generate(invoice);
-
-
         }
       }
+      final invoice = InvoiceCrusherSale(
+          _threeToFour.toString(),
+          _oneToSix.toString(),
+          _half.toString(),
+          _fiveToTen.toString(),
+          _totalStock.toString(),
+          _totalSale.toString(),
+          _list);
+
+      final pdfFile =  PdfCrusherSale.generate(invoice);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

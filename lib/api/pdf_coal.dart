@@ -14,12 +14,13 @@ class PdfCoal {
     pdf.addPage(MultiPage(
       pageFormat: PdfPageFormat.a3,
       build: (context) => [
+        buildFooter(),
         buildTitle(invoice, isSale),
         buildInvoice(invoice, isSale),
         Divider(),
         buildTotal(invoice, isSale),
       ],
-      footer: (context) => buildFooter(),
+    //  footer: (context) => buildFooter(),
     ));
 
     return PdfApi.saveDocument(
@@ -44,7 +45,6 @@ class PdfCoal {
   static Widget buildInvoice(InvoiceCoal invoice, bool isSale) {
     final headers = [
       'Date',
-      'Truck Count',
       'Truck Number',
       'Supplier Name',
       'Ton',
@@ -54,22 +54,18 @@ class PdfCoal {
 
     final headersSale = [
       'Date',
-      'Truck Count',
       'Truck Number',
       'Buyer Name',
       'Port',
       'Ton',
       'Rate',
       'Total Price',
-      'Payment Type',
-      'Payment Info',
       'Remarks'
     ];
 
     final data = invoice.items.map((item) {
       return [
         item.date,
-        item.truckCount,
         item.truckNumber,
         item.buyerName,
         item.ton,
@@ -81,15 +77,12 @@ class PdfCoal {
     final dataSale = invoice.items.map((item) {
       return [
         item.date,
-        item.truckCount,
         item.truckNumber,
         item.buyerName,
         item.port,
         item.ton,
         item.rate,
         item.total,
-        item.paymentType,
-        item.paymentInfo,
         item.remarks
       ];
     }).toList();
@@ -97,10 +90,9 @@ class PdfCoal {
     return Table.fromTextArray(
       headers: isSale ? headersSale : headers,
       data: isSale ? dataSale : data,
-      border: null,
       headerStyle: TextStyle(fontWeight: FontWeight.bold),
       headerDecoration: BoxDecoration(color: PdfColors.grey300),
-      cellHeight: 30,
+      cellHeight: 20,
       cellAlignments: isSale
           ? {
               0: Alignment.centerLeft,
@@ -123,8 +115,7 @@ class PdfCoal {
               7: Alignment.centerRight,
               8: Alignment.centerRight,
               9: Alignment.centerRight,
-              10: Alignment.centerRight,
-              11: Alignment.centerRight,
+
             },
     );
   }
@@ -139,6 +130,7 @@ class PdfCoal {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
                     buildText(
                         title: 'Total Stock',
                         value: invoice.stock,
@@ -146,7 +138,11 @@ class PdfCoal {
                     buildText(
                         title: "Total Amount",
                         value: invoice.amount,
-                        unite: true)
+                        unite: true),
+                    isSale? Text(""): buildText(
+                        title: 'Rate',
+                        value: invoice.rate,
+                        unite: true),
                   ]))
         ]));
   }
@@ -170,20 +166,24 @@ class PdfCoal {
 
   static Widget buildFooter() =>
       Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Divider(),
-        SizedBox(height: 2 * PdfPageFormat.mm),
+
         buildFooterText(
-            title: 'Organisation :',
-            value: 'M/S Priya Enterprise & B.N. Traders'),
+            title: '',
+            value: 'M/S Priya Enterprise coal & stone importer & distributor', isBold: true),
         SizedBox(height: 1 * PdfPageFormat.mm),
-        buildFooterText(title: 'Contact :', value: '+8801711-362096'),
+        buildFooterText(title: 'Contact :', value: '+8801711-362096 , +8801712-403015 , +8801716-882817', isBold: false),
         SizedBox(height: 1 * PdfPageFormat.mm),
-        buildFooterText(title: 'Address :', value: 'Laldighirpar, Sylhet'),
+        buildFooterText(title: 'Address :', value: 'Laldighirpar, Sylhet', isBold: false),
         SizedBox(height: 1 * PdfPageFormat.mm),
-        buildFooterText(title: 'Developed By :', value: 'MeetTech Lab '),
+        buildFooterText(title: 'Email :', value: 'sawonseu@gmail.com', isBold: false),
+        SizedBox(height: 1 * PdfPageFormat.mm),
+        buildFooterText(title: 'Developed By :', value: 'MeetTech Lab ', isBold: false),
+        buildFooterText(title: 'Contact :', value: '+8801755-460159 ', isBold: false),
+        SizedBox(height: 2 * PdfPageFormat.mm),
+        Divider(),
       ]);
 
-  static buildFooterText({required String title, required String value}) {
+  static buildFooterText({required String title, required String value , required bool isBold}) {
     final style = TextStyle(fontWeight: FontWeight.bold);
 
     return Row(
@@ -192,7 +192,7 @@ class PdfCoal {
         children: [
           Text(title, style: style),
           SizedBox(width: 2 * PdfPageFormat.mm),
-          Text(value),
+          isBold ?Text(value, style:  style): Text(value),
         ]);
   }
 }

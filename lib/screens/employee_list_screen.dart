@@ -6,6 +6,7 @@ import 'package:importmanagementsystemonline/screens/single_employee_screen.dart
 
 import '../model/employee.dart';
 import 'create_employee_screen.dart';
+import 'dashboard.dart';
 
 class EmployeeListScreen extends StatefulWidget {
   const EmployeeListScreen({Key? key}) : super(key: key);
@@ -27,6 +28,20 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Employee List'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -67,7 +82,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(

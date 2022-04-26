@@ -6,6 +6,7 @@ import 'package:importmanagementsystemonline/screens/single_employee_screen.dart
 import 'package:intl/intl.dart';
 
 import '../model/employee.dart';
+import 'dashboard.dart';
 
 class CreateEmployeeScreen extends StatefulWidget {
   const CreateEmployeeScreen({Key? key}) : super(key: key);
@@ -232,7 +233,7 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: salaryEditingController,
             keyboardType: TextInputType.name,
@@ -268,7 +269,7 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: salaryAdvancedEditingController,
             keyboardType: TextInputType.name,
@@ -394,6 +395,20 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Create New Employee'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -460,7 +475,22 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
 
   void AddData() async {
     if (_formKey.currentState!.validate() && _date != null) {
-      final ref = FirebaseFirestore.instance.collection("employees").doc();
+
+      bool _unique = true;
+      FirebaseFirestore.instance
+          .collection('employees')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if (doc["name"].toString().toLowerCase() ==
+              nameEditingController.text.toString().toLowerCase()) {
+            _unique = false;
+          }
+        }
+
+        if (_unique) {
+
+            final ref = FirebaseFirestore.instance.collection("employees").doc();
       final _invoice = "1";
       Employee employeeModel = Employee();
        employeeModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
@@ -476,7 +506,7 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
     employeeModel.address =    addressEditingController.text;
     employeeModel.year =    DateFormat('MMM-yyyy').format(_date!);
     employeeModel.docID = ref.id;
-      await ref.set(employeeModel.toMap());
+       ref.set(employeeModel.toMap());
 
       FirebaseFirestore.instance
           .collection('employees')
@@ -486,7 +516,6 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
           if (doc.id == ref.id) {
             setState(() {
               _process = false;
-              _count = 1;
             });
 
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -498,6 +527,17 @@ class _CreateEmployeeScreenState extends State<CreateEmployeeScreen> {
                     builder: (context) =>
                         SingleEmployeeScreen(employeeModel: doc)));
           }
+        }
+      });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(
+                  "This Employee name is already exist. Please create an unique one!!")));
+          setState(() {
+            _process = false;
+            _count = 1;
+          });
         }
       });
     } else {

@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
 import '../model/lc.dart';
+import 'dashboard.dart';
 import 'individual_lc_history_screen.dart';
 
 class IndividualLCUpdateScreen extends StatefulWidget {
@@ -42,9 +43,13 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
   int? _count;
   int? _invoice;
 
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
+
   @override
   void initState() {
     super.initState();
+
     _date = DateFormat("dd-MMM-yyyy").parse(widget.lcModel["date"]);
     truckCountEditingController =
         new TextEditingController(text: widget.lcModel["truckCount"]);
@@ -57,10 +62,47 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
     _count = 1;
     _lcNumber = widget.lcModel["lcNumber"];
     _invoice = int.parse(widget.lcModel["invoice"]);
+    _chosenPort =widget.lcModel["port"];
   }
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -118,7 +160,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -225,13 +267,13 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: cftEditingController,
             keyboardType: TextInputType.name,
             validator: (value) {
               if (value!.isEmpty) {
-                return ("CFT cannot be empty!!");
+                return ("Ton cannot be empty!!");
               }
               return null;
             },
@@ -246,7 +288,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
                 20,
                 15,
               ),
-              labelText: 'CFT',
+              labelText: 'Ton',
               labelStyle: TextStyle(color: Colors.blue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -261,7 +303,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -408,7 +450,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
             cursorColor: Colors.blue,
             autofocus: false,
             controller: lcOpenPriceEditingController,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value!.isEmpty) {
@@ -444,7 +486,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
             cursorColor: Colors.blue,
             autofocus: false,
             controller: dutyCostEditingController,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value!.isEmpty) {
@@ -480,7 +522,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
             cursorColor: Colors.blue,
             autofocus: false,
             controller: speedMoneyEditingController,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value!.isEmpty) {
@@ -600,47 +642,25 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
       ),
     );
 
-    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
-        value: item,
-        child: Text(
-          item,
-          style: TextStyle(color: Colors.blue),
-        ));
-
-    final paymentDropdown = Container(
-        width: MediaQuery.of(context).size.width / 4,
-        child: DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            ),
-            items: _paymentTypes.map(buildMenuItem).toList(),
-            hint: Text(
-              'Select Payment',
-              style: TextStyle(color: Colors.blue),
-            ),
-            value: _chosenPayment,
-            onChanged: (newValue) {
-              setState(() {
-                _chosenPayment = newValue;
-              });
-            }));
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text("LC Number ${widget.lcModel["lcNumber"]}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -676,10 +696,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
                     SizedBox(
                       height: 20,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [cftField, portField],
-                    ),
+                   cftField,
                     SizedBox(
                       height: 20,
                     ),
@@ -702,11 +719,11 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
   }
 
   void AddData() async{
-    if (_formKey.currentState!.validate() && _date != null) {
+    if (_formKey.currentState!.validate() && _date != null && _chosenPort != null) {
       final ref = FirebaseFirestore.instance.collection("lcs").doc(widget.lcModel["docID"]);
       final _stock = (double.parse(widget.lcModel["stockBalance"]) +
               double.parse(cftEditingController.text))
-          .toString();
+          .toStringAsFixed(3);
       // final _purchaseBalance = (double.parse(cftEditingController.text) * double.parse(rateEditingController.text)).toString();
       //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
       LC lcModel = LC();
@@ -714,7 +731,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
       lcModel.truckCount =  truckCountEditingController.text;
       lcModel.truckNumber =    truckNumberEditingController.text;
       lcModel.invoice =     _invoice.toString();
-      lcModel.port =     portEditingController.text;
+      lcModel.port =     _chosenPort;
       lcModel.cft =      cftEditingController.text;
       lcModel.rate =     "0";
       lcModel.stockBalance =     _stock;
@@ -742,7 +759,6 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
 
             setState(() {
               _process = false;
-              _count = 1;
             });
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Updated!!")));
             Navigator.pushReplacement(

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../model/company.dart';
 import '../model/employee.dart';
+import 'dashboard.dart';
 
 class CompanyUpdateScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> companyModel;
@@ -157,7 +158,7 @@ class _CompanyUpdateScreenState extends State<CompanyUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: debitCreditEditingController,
             keyboardType: TextInputType.number,
@@ -337,6 +338,20 @@ class _CompanyUpdateScreenState extends State<CompanyUpdateScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Client/Supplier Name : ${widget.companyModel["name"]}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -443,7 +458,6 @@ class _CompanyUpdateScreenState extends State<CompanyUpdateScreen> {
           if (doc.id == ref.id) {
             setState(() {
               _process = false;
-              _count = 1;
             });
 
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(

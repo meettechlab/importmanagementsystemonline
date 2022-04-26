@@ -6,6 +6,7 @@ import 'package:importmanagementsystemonline/screens/single_employee_screen.dart
 import 'package:intl/intl.dart';
 
 import '../model/employee.dart';
+import 'dashboard.dart';
 
 class EmployeeSalaryEntryScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> employeeModel;
@@ -27,7 +28,7 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
   DateTime? _date;
   bool? _process;
   int? _count;
-  int? _invoice;
+  int _invoice = 1;
 
   @override
   void initState() {
@@ -35,24 +36,6 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
     _process = false;
     _count = 1;
 
-    FirebaseFirestore.instance
-        .collection('employees')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        if(doc["name"] == widget.employeeModel.get("name")  ){
-          final _docList = [];
-          _docList.add(doc);
-
-          if (_docList.isNotEmpty) {
-            setState(() {
-              _invoice = int.parse(_docList.last["invoice"]) + 1;
-            });
-          }
-
-        }
-      }
-    });
   }
 
   @override
@@ -120,7 +103,7 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
             .size
             .width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: salaryAdvancedEditingController,
@@ -289,6 +272,20 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text("Employee Name : ${widget.employeeModel["name"]}"),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -352,6 +349,22 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
   void AddData() async {
     if (_formKey.currentState!.validate() && _date != null) {
       final ref = FirebaseFirestore.instance.collection("employees").doc();
+
+
+
+      FirebaseFirestore.instance
+          .collection('employees')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if(doc["name"] == widget.employeeModel.get("name")  ){
+
+            if (_invoice <= int.parse(doc["invoice"])) {
+              _invoice = int.parse(doc["invoice"]) + 1;
+            }
+          }
+        }
+
       Employee employeeModel = Employee();
       employeeModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
       employeeModel.name =     widget.employeeModel["name"];
@@ -366,7 +379,7 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
       employeeModel.address =    widget.employeeModel["address"];
       employeeModel.year =    DateFormat('MMM-yyyy').format(_date!);
       employeeModel.docID = ref.id;
-      await ref.set(employeeModel.toMap());
+       ref.set(employeeModel.toMap());
 
       FirebaseFirestore.instance
           .collection('employees')
@@ -376,7 +389,6 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
           if (doc.id == ref.id) {
             setState(() {
               _process = false;
-              _count = 1;
             });
 
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -389,6 +401,7 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
                         SingleEmployeeScreen(employeeModel: doc)));
           }
         }
+      });
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

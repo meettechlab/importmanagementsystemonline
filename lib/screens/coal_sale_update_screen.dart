@@ -8,6 +8,7 @@ import '../model/coal.dart';
 import '../model/company.dart';
 import '../model/stone.dart';
 import 'coal_sale_screen.dart';
+import 'dashboard.dart';
 
 class CoalSaleUpdateScreen extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> coalModel;
@@ -36,6 +37,10 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
   int? _count;
   int? _invoice;
 
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  String? _chosenPort;
+
   List<String> _companyNameList = [];
   String? _chosenCompanyName;
   List<String> _companyContactList = [];
@@ -46,6 +51,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
     super.initState();
     _process = false;
     _count = 1;
+    _chosenPort = widget.coalModel["port"];
     _chosenCompanyContact = widget.coalModel["contact"];
     _chosenCompanyName = widget.coalModel["supplierName"];
     _chosenPayment = widget.coalModel["paymentType"];
@@ -84,6 +90,42 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuPort(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuPort).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -177,7 +219,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: tonEditingController,
             keyboardType: TextInputType.name,
@@ -213,7 +255,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
             cursorColor: Colors.blue,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             autofocus: false,
             controller: rateEditingController,
             keyboardType: TextInputType.name,
@@ -247,7 +289,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))],
             cursorColor: Colors.blue,
             autofocus: false,
             controller: truckCountEditingController,
@@ -581,6 +623,20 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Update'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -596,7 +652,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        portField,
+                        portDropdown,
                         pickDate,
                       ],
                     ),
@@ -653,11 +709,11 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
     if (_formKey.currentState!.validate() &&
         _chosenPayment != null &&
         _chosenCompanyContact != null &&
-        _chosenCompanyName != null) {
+        _chosenCompanyName != null && _chosenPort != null) {
 
       final ref = FirebaseFirestore.instance.collection("coals").doc(widget.coalModel.get("docID"));
       final _totalSale = (double.parse(tonEditingController.text) *
-              double.parse(rateEditingController.text))
+              double.parse(rateEditingController.text)).floor()
           .toString();
 
       Coal coalModel = Coal();
@@ -665,7 +721,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
       coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
       coalModel.invoice = _invoice.toString();
       coalModel.supplierName = _chosenCompanyName!;
-      coalModel.port = portEditingController.text;
+      coalModel.port = _chosenPort;
       coalModel.ton =  tonEditingController.text;
       coalModel.rate =          rateEditingController.text;
       coalModel.totalPrice = _totalSale;
@@ -683,6 +739,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
 
 
       String? _docID;
+      String? _invoiceC;
 
       FirebaseFirestore.instance
           .collection('companies')
@@ -691,9 +748,10 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
         for (var doc in querySnapshot.docs) {
           if (doc["id"] == "coalsale" + widget.coalModel["invoice"]) {
                 _docID = doc.id;
+                _invoiceC = doc["invoice"];
           }
         }
-      });
+
 
       final ref2= FirebaseFirestore.instance.collection("companies").doc(_docID);
       Company companyModel = Company();
@@ -701,25 +759,25 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
       companyModel.name = _chosenCompanyName!;
       companyModel.contact =_chosenCompanyContact!;
       companyModel.address =  "0";
-      companyModel.credit =    "0";
-      companyModel.debit =  _totalSale;
-      companyModel.remarks =  "Coal Sale";
-      companyModel.invoice =  "2";
+      companyModel.credit =    _totalSale;
+      companyModel.debit = "0" ;
+      companyModel.remarks =  "Coal Sale : " +  tonEditingController.text  + " Ton";
+      companyModel.invoice = _invoiceC;
       companyModel.paymentTypes =  "0";
       companyModel.paymentInfo =  "0";
       companyModel.date =   DateFormat('dd-MMM-yyyy').format(_date!);
       companyModel.year =    DateFormat('MMM-yyyy').format(_date!);
       companyModel.docID = ref2.id;
-      await   ref2.set(companyModel.toMap());
+         ref2.set(companyModel.toMap());
 
       setState(() {
         _process = false;
-        _count = 1;
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.green, content: Text("Entry Updated!!")));
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => CoalSaleScreen()));
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red, content: Text("Something Wrong!!")));

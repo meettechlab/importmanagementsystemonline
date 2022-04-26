@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:importmanagementsystemonline/screens/profit_loss_screen.dart';
 import 'package:importmanagementsystemonline/screens/stone_sale_screen.dart';
 
 
@@ -10,8 +11,14 @@ import '../model/stone.dart';
 import 'coal_lc_list_screen.dart';
 import 'coal_sale_screen.dart';
 import 'company_list_screen.dart';
+import 'crusher_sale_s_screen.dart';
+import 'crusher_sale_t_screen.dart';
+import 'crusher_stock_s_screen.dart';
+import 'crusher_stock_t_screen.dart';
+import 'daily_cost_screen.dart';
 import 'employee_list_screen.dart';
 import 'lc_list_screen.dart';
+import 'non_lc_screen.dart';
 
 
 class Dashboard extends StatefulWidget {
@@ -68,15 +75,15 @@ class _DashboardState extends State<Dashboard> {
                   ),
 
                   getImageButton(() {
-                   // Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherStockSScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherStockSScreen()));
                   },
                     'assets/images/crusher.jpg',
                     'Crusher Stock ( Shutarkandi )',
                   ),
                   getImageButton(() {
-                    //Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherStockTScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherStockTScreen()));
                   },
-                    'assets/images/crusher.jpg',
+                    'assets/images/crusher_two.jpg',
                     'Crusher Stock ( Tamabil )',
                   )
                 ],
@@ -88,31 +95,33 @@ class _DashboardState extends State<Dashboard> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   getImageButton(() {
-                   // Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherSaleSScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherSaleSScreen()));
                   },
                       'assets/images/crusher.jpg',
                     'Crusher Sale ( Shutarkandi )',
                   ),
 
                   getImageButton(() {
-                    //Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherSaleTScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CrusherSaleTScreen()));
                   },
-                    'assets/images/crusher.jpg',
+                    'assets/images/crusher_two.jpg',
                     'Crusher Sale ( Tamabil )',
                   ),
 
-                  getImageButton(() {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeListScreen()));
-                  },
-                    'assets/images/employee.jpg',
-                    'Employees',
-                  ),
+
+
                   getImageButton(() {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => CoalLCListScreen()));
                   },
                     'assets/images/Coal.jpg',
                     'Coal Purchase',
-                  )
+                  ),
+                  getImageButton(() {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CoalSaleScreen()));
+                  },
+                    'assets/images/Coal.jpg',
+                    'Coal Sale',
+                  ),
                 ],
               ),
               SizedBox(
@@ -121,13 +130,13 @@ class _DashboardState extends State<Dashboard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  getImageButton(() {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => CoalSaleScreen()));
-                  },
-                    'assets/images/Coal.jpg',
-                    'Coal Sale',
-                  ),
 
+                  getImageButton(() {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => EmployeeListScreen()));
+                  },
+                    'assets/images/employee.jpg',
+                    'Employees',
+                  ),
                   getImageButton(() {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => CompanyListScreen()));
                   },
@@ -136,13 +145,13 @@ class _DashboardState extends State<Dashboard> {
                   ),
 
                   getImageButton(() {
-                  //  Navigator.push(context, MaterialPageRoute(builder: (context) => DailyCostScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => DailyCostScreen()));
                   },
                     'assets/images/profit.png',
                     'Daily Cost',
                   ),
                   getImageButton(() {
-                    //Navigator.push(context, MaterialPageRoute(builder: (context) => NonLCScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => NonLCScreen()));
                   },
                     'assets/images/profit.png',
                     'NON-LC Transaction',
@@ -156,7 +165,7 @@ class _DashboardState extends State<Dashboard> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   getImageButton(() {
-                  //  Navigator.push(context, MaterialPageRoute(builder: (context) => ProfitLossScreen()));
+                   Navigator.push(context, MaterialPageRoute(builder: (context) => ProfitLossScreen()));
                   },
                     'assets/images/profit.png',
                     'Profit / Loss',

@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../model/lc.dart';
 import '../model/stone.dart';
+import 'dashboard.dart';
 import 'individual_lc_entry_screen.dart';
 import 'individual_lc_history_screen.dart';
 import 'lc_new_screen.dart';
@@ -18,7 +19,7 @@ class LCListScreen extends StatefulWidget {
 
 class _LCListScreenState extends State<LCListScreen> {
   double _totalStock = 0.0;
-  double _totalAmount = 0.0;
+  int _totalAmount = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -30,8 +31,8 @@ class _LCListScreenState extends State<LCListScreen> {
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
           setState(() {
-            _totalStock = (_totalStock + double.parse(doc["cft"]));
-            _totalAmount = (_totalAmount + double.parse(doc["totalBalance"]));
+            _totalStock = double.parse((_totalStock + double.parse(doc["cft"])).toStringAsFixed(3));
+            _totalAmount = (_totalAmount + double.parse(doc["totalBalance"])).floor();
           });
       }
     });
@@ -42,7 +43,7 @@ class _LCListScreenState extends State<LCListScreen> {
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
         setState(() {
-          _totalStock = (_totalStock - double.parse(doc["cft"]));
+          _totalStock = double.parse((_totalStock - double.parse(doc["cft"])).toStringAsFixed(3));
         });
       }
     });
@@ -54,6 +55,20 @@ class _LCListScreenState extends State<LCListScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('LC List'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -128,7 +143,7 @@ class _LCListScreenState extends State<LCListScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -169,12 +184,68 @@ class _LCListScreenState extends State<LCListScreen> {
                 SizedBox(
                   width: 20,
                 ),
-                Text(
-                  lc["lcNumber"],
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
+
+                Column(
+                  children: [
+                    Text(
+                      "Date",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      lc["date"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 70,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "LC",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      lc["lcNumber"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+
+                SizedBox(
+                  width: 70,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "Port",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      lc["port"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+
+                SizedBox(
+                  width: 70,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      "Seller Name",
+                      style: TextStyle(color: Colors.blue, fontSize: 20),
+                    ),
+                    Text(
+                      lc["sellerName"],
+                      style: TextStyle(color: Colors.grey, fontSize: 20),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 70,
                 ),
                 IconButton(
                   onPressed: () {

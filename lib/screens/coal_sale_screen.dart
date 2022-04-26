@@ -12,6 +12,7 @@ import '../model/invoiceCoal.dart';
 import '../model/stone.dart';
 import 'coal_sale_entry_screen.dart';
 import 'coal_sale_update_screen.dart';
+import 'dashboard.dart';
 import 'individual_lc_entry_screen.dart';
 
 class CoalSaleScreen extends StatefulWidget {
@@ -23,7 +24,7 @@ class CoalSaleScreen extends StatefulWidget {
 
 class _CoalSaleScreenState extends State<CoalSaleScreen> {
   double _totalStock = 0.0;
-  double _totalAmount = 0.0;
+  int _totalAmount = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -36,12 +37,12 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
       for (var doc in querySnapshot.docs) {
         if (doc["lc"].toString().toLowerCase() != "sale") {
           setState(() {
-            _totalStock = (_totalStock + double.parse(doc["ton"]));
+            _totalStock = double.parse((_totalStock + double.parse(doc["ton"])).toStringAsFixed(3));
           });
         }else{
           setState(() {
-            _totalStock = (_totalStock - double.parse(doc["ton"]));
-            _totalAmount = (_totalAmount + double.parse(doc["debit"]));
+            _totalStock = double.parse((_totalStock - double.parse(doc["ton"])).toStringAsFixed(3));
+            _totalAmount = (_totalAmount + double.parse(doc["debit"])).floor();
           });
         }
       }
@@ -103,6 +104,20 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Coal Sale List'),
+        actions: [
+          TextButton(
+              onPressed: (){
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              },
+              child: Text(
+                "Dashboard",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              )
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -139,7 +154,7 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("invoice",  descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -178,7 +193,7 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
                       style: TextStyle(color: Colors.blue, fontSize: 20),
                     ),
                     Text(
-                      coal["invoice"],
+                      coal["date"],
                       style: TextStyle(color: Colors.grey, fontSize: 20),
                     ),
                   ],
@@ -414,6 +429,9 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
       );
 
   void generatePdf() async {
+    final _list = <CoalItem>[];
+
+    final _docList = [];
     FirebaseFirestore.instance
         .collection('coals')
         .get()
@@ -422,7 +440,7 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
         if(doc["lc"].toString().toLowerCase() == "sale"){
 
 
-          final _list = <CoalItem>[];
+
           _list.add(new CoalItem(
             doc["date"],
             doc["truckCount"],
@@ -438,13 +456,13 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
           ));
 
 
-          final _docList = [];
           _docList.add(doc);
 
-          final invoice = InvoiceCoal(_totalStock.toString(), _totalAmount.toString(), "sale", _list);
-          final pdfFile =  PdfCoal.generate(invoice, true);
         }
       }
+
+      final invoice = InvoiceCoal(_totalStock.toString(), _totalAmount.toString(), "sale","0", _list);
+      final pdfFile =  PdfCoal.generate(invoice, true);
     });
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
