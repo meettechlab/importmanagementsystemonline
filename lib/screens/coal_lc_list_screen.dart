@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:importmanagementsystemonline/model/coal_archive.dart';
+import 'package:importmanagementsystemonline/screens/archive.dart';
 import 'package:importmanagementsystemonline/screens/single_coal_lc_screen.dart';
 import '../model/coal.dart';
 import '../model/company.dart';
@@ -19,11 +22,17 @@ class CoalLCListScreen extends StatefulWidget {
 class _CoalLCListScreenState extends State<CoalLCListScreen> {
   double _totalStock = 0.0;
   int _totalAmount = 0;
+  final rateEditingController = new TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool? _process;
+  int? _count;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _process = false;
+    _count = 1;
     calculate();
   }
 
@@ -33,14 +42,16 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        if(doc["lc"] != "sale"){
+        if (doc["lc"] != "sale") {
           setState(() {
-            _totalStock = double.parse((_totalStock + double.parse(doc["ton"])).toStringAsFixed(3));
+            _totalStock = double.parse(
+                (_totalStock + double.parse(doc["ton"])).toStringAsFixed(3));
             _totalAmount = (_totalAmount + double.parse(doc["credit"])).floor();
           });
-        }else{
+        } else {
           setState(() {
-            _totalStock = double.parse((_totalStock - double.parse(doc["ton"])).toStringAsFixed(3));
+            _totalStock = double.parse(
+                (_totalStock - double.parse(doc["ton"])).toStringAsFixed(3));
           });
         }
       }
@@ -49,23 +60,114 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final rateField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
+            ],
+            autofocus: false,
+            controller: rateEditingController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("Rate cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              rateEditingController.text = value!;
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Year',
+              labelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
+    final addButton = Material(
+      elevation: (_process!) ? 0 : 5,
+      color: (_process!) ? Colors.blue.shade800 : Colors.blue,
+      borderRadius: BorderRadius.circular(30),
+      child: MaterialButton(
+        padding: EdgeInsets.fromLTRB(
+          100,
+          30,
+          100,
+          30,
+        ),
+        minWidth: 20,
+        onPressed: () {
+          setState(() {
+            _process = true;
+            _count = (_count! - 1);
+          });
+          (_count! < 0)
+              ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.red, content: Text("Please Wait!!")))
+              : AddData();
+        },
+        child: (_process!)
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Processing',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Center(
+                      child: SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ))),
+                ],
+              )
+            : Text(
+                'Archive',
+                textAlign: TextAlign.center,
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text('Coal LC List'),
         actions: [
           TextButton(
-              onPressed: (){
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => Dashboard()));
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Dashboard()));
               },
               child: Text(
                 "Dashboard",
-                style: TextStyle(
-                    color: Colors.white
-                ),
-              )
-          )
+                style: TextStyle(color: Colors.white),
+              ))
         ],
       ),
       body: Column(
@@ -83,6 +185,18 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
                   "Total Purchase : $_totalAmount TK",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                rateField,
+                SizedBox(
+                  width: 20,
+                ),
+                addButton,
               ],
             ),
           ),
@@ -141,7 +255,10 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        stream: _collectionReference
+            .orderBy("date", descending: true)
+            .snapshots()
+            .asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -152,10 +269,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
               children: [
                 ...snapshot.data!.docs
                     .where((QueryDocumentSnapshot<Object?> element) =>
-                        element["invoice"]
-                            .toString()
-                            .toLowerCase()
-                            ==("1"))
+                        element["invoice"].toString().toLowerCase() == ("1"))
                     .map((QueryDocumentSnapshot<Object?> data) {
                   return buildSingleItem(data);
                 })
@@ -167,7 +281,10 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
 
   Widget buildSingleItem(coal) => InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: coal)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SingleCoalLCScreen(coalModel: coal)));
         },
         child: Center(
           child: Padding(
@@ -251,9 +368,9 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
                         .get()
                         .then((QuerySnapshot querySnapshot) {
                       for (var doc in querySnapshot.docs) {
-                        if(doc["lc"] == coal["lc"]){
+                        if (doc["lc"] == coal["lc"]) {
                           setState(() {
-                           doc.reference.delete();
+                            doc.reference.delete();
                           });
                         }
                       }
@@ -264,7 +381,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
                         .get()
                         .then((QuerySnapshot querySnapshot) {
                       for (var doc in querySnapshot.docs) {
-                        if(doc["id"] == "coalstock" + coal["lc"]){
+                        if (doc["id"] == "coalstock" + coal["lc"]) {
                           setState(() {
                             doc.reference.delete();
                           });
@@ -282,6 +399,74 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
           ),
         ),
       );
+
+  void AddData() async {
+    try {
+      int _invoiceA  =  1;
+      FirebaseFirestore.instance
+          .collection('coals')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if (doc["year"].toString().contains(rateEditingController.text) &&doc["lc"].toString().toLowerCase() != "sale" ) {
+            /*FirebaseFirestore.instance
+                .collection('coalarchive')
+                .get()
+                .then((QuerySnapshot querySnapshot) {
+              for (var doc in querySnapshot.docs) {
+                if (!doc["archiveName"].toString().toLowerCase().contains("sale")) {
+                  if (_invoiceA <= int.parse(doc["archive"])) {
+                    _invoiceA = int.parse(doc["archive"]) + 1;
+                  }
+                }
+              }*/
+              var ref =
+                  FirebaseFirestore.instance.collection("coalarchive").doc();
+               CoalArchive coalModel = CoalArchive();
+              coalModel.archive = _invoiceA.toString();
+              coalModel.archiveName =
+                  doc["year"].toString().split("-").last + " : " + "Purchase";
+              coalModel.lc = doc["lc"];
+              coalModel.date = doc["date"];
+              coalModel.invoice = doc["invoice"];
+              coalModel.supplierName = doc["supplierName"];
+              coalModel.port = doc["port"];
+              coalModel.ton = doc["ton"];
+              coalModel.rate = doc["rate"];
+              coalModel.totalPrice = doc["totalPrice"];
+              coalModel.paymentType = doc["paymentType"];
+              coalModel.paymentInformation = doc["paymentInformation"];
+              coalModel.credit = doc["credit"];
+              coalModel.debit = doc["debit"];
+              coalModel.remarks = doc["remarks"];
+              coalModel.year = doc["year"];
+              coalModel.truckCount = doc["truckCount"];
+              coalModel.truckNumber = doc["truckNumber"];
+              coalModel.contact = doc["contact"];
+              coalModel.docID = ref.id;
+              ref.set(coalModel.toMap());
+              _invoiceA = _invoiceA + 1;
+              doc.reference.delete();
+          }
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Colors.green, content: Text("Data archived!!")));
+        setState(() {
+          _process = false;
+          _count = 1;
+          rateEditingController.clear();
+        });
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.green, content: Text("Something wrong!!")));
+      setState(() {
+        _process = false;
+        _count = 1;
+        rateEditingController.clear();
+      });
+    }
+  }
 }
 
 class LCSearch extends SearchDelegate {
@@ -328,12 +513,16 @@ class LCSearch extends SearchDelegate {
                           .toString()
                           .toLowerCase()
                           .contains(query.toLowerCase()) &&
-                      element["invoice"].toString().toLowerCase()==("1"))
+                      element["invoice"].toString().toLowerCase() == ("1"))
                   .map((QueryDocumentSnapshot<Object?> data) {
                 final String lc = data.get("lc");
                 return ListTile(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: data)));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                SingleCoalLCScreen(coalModel: data)));
                   },
                   title: Text(lc),
                 );
@@ -361,15 +550,16 @@ class LCSearch extends SearchDelegate {
                             .toString()
                             .toLowerCase()
                             .contains(query.toLowerCase()) &&
-                        element["invoice"]
-                            .toString()
-                            .toLowerCase()
-                            ==("1"))
+                        element["invoice"].toString().toLowerCase() == ("1"))
                     .map((QueryDocumentSnapshot<Object?> data) {
                   final String lc = data.get("lc");
                   return ListTile(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: data)));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SingleCoalLCScreen(coalModel: data)));
                     },
                     title: Text(lc),
                   );
@@ -426,16 +616,17 @@ class YearSearch extends SearchDelegate {
                             .toString()
                             .toLowerCase()
                             .contains(query.toLowerCase()) &&
-                        element["invoice"]
-                            .toString()
-                            .toLowerCase()
-                            ==("1"))
+                        element["invoice"].toString().toLowerCase() == ("1"))
                     .map((QueryDocumentSnapshot<Object?> data) {
                   final String lc = data.get("lc");
                   final String year = data.get("year");
                   return ListTile(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: data)));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SingleCoalLCScreen(coalModel: data)));
                     },
                     title: Text(lc),
                     subtitle: Text(year),
@@ -465,16 +656,17 @@ class YearSearch extends SearchDelegate {
                             .toString()
                             .toLowerCase()
                             .contains(query.toLowerCase()) &&
-                        element["invoice"]
-                            .toString()
-                            .toLowerCase()
-                            ==("1"))
+                        element["invoice"].toString().toLowerCase() == ("1"))
                     .map((QueryDocumentSnapshot<Object?> data) {
                   final String lc = data.get("lc");
                   final String year = data.get("year");
                   return ListTile(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SingleCoalLCScreen(coalModel: data)));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SingleCoalLCScreen(coalModel: data)));
                     },
                     title: Text(lc),
                     subtitle: Text(year),

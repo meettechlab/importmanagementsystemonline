@@ -109,7 +109,7 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -742,7 +742,7 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
         }
 
       Stone stoneModel = Stone();
-      stoneModel.date =     DateFormat('dd-MMM-yyyy').format(_date!);
+      stoneModel.date =     DateFormat('yyyy-MM-dd').format(_date!);
     stoneModel.truckCount =   truckCountEditingController.text;
     stoneModel.truckNumber =    truckNumberEditingController.text;
     stoneModel.invoice =    _invoice.toString();
@@ -781,13 +781,15 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
           companyModel.address = "0";
           companyModel.credit = _totalSale;
           companyModel.debit ="0" ;
-          companyModel.remarks = "Stone Sale : " + cftEditingController.text + " CFT";
+          companyModel.remarks = "Stone Sale";
           companyModel.invoice = _invoiceC.toString();
           companyModel.paymentTypes = "0";
           companyModel.paymentInfo = "0";
-          companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           companyModel.year = DateFormat('MMM-yyyy').format(_date!);
           companyModel.docID = ref2.id;
+          companyModel.rate = rateEditingController.text;
+          companyModel.quantity =  cftEditingController.text;
           ref2.set(companyModel.toMap());
           setState(() {
             _process = false;

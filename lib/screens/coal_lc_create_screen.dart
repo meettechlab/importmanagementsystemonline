@@ -140,7 +140,7 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -581,7 +581,7 @@ class _CoalLCCreateScreenState extends State<CoalLCCreateScreen> {
           final _invoice = "1";
           Coal coalModel = Coal();
           coalModel.lc = lcNumberEditingController.text;
-          coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           coalModel.invoice = _invoice;
           coalModel.supplierName = _chosenCompanyName!;
           coalModel.port = _chosenPort;

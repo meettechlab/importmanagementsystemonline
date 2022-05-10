@@ -107,7 +107,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -745,7 +745,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
 
           CSale cSaleModel = CSale();
           cSaleModel.invoice = _invoice.toString();
-          cSaleModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          cSaleModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           cSaleModel.truckCount = truckCountEditingController.text;
           cSaleModel.cft = cftEditingController.text;
           cSaleModel.rate = rateEditingController.text;
@@ -783,13 +783,15 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
             companyModel.address = "0";
             companyModel.credit = _price;
             companyModel.debit = "0";
-            companyModel.remarks = "Crusher Sale Shutarkandi : " +  cftEditingController.text + " CFT";
+            companyModel.remarks = "Crusher Sale Shutarkandi";
             companyModel.invoice = _invoiceC.toString();
             companyModel.paymentTypes = "0";
             companyModel.paymentInfo = "0";
-            companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+            companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
             companyModel.year = DateFormat('MMM-yyyy').format(_date!);
             companyModel.docID = ref2.id;
+            companyModel.rate = rateEditingController.text;
+            companyModel.quantity =  cftEditingController.text;
             ref2.set(companyModel.toMap());
 
             setState(() {
@@ -820,7 +822,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
 
           CSale cSaleModel = CSale();
           cSaleModel.invoice = _invoice.toString();
-          cSaleModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          cSaleModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           cSaleModel.truckCount = truckCountEditingController.text;
           cSaleModel.cft = cftEditingController.text;
           cSaleModel.rate = rateEditingController.text;
@@ -865,9 +867,11 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
             companyModel.invoice = _invoiceC.toString();
             companyModel.paymentTypes = "0";
             companyModel.paymentInfo = "0";
-            companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+            companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
             companyModel.year = DateFormat('MMM-yyyy').format(_date!);
             companyModel.docID = ref2.id;
+            companyModel.rate = rateEditingController.text;
+            companyModel.quantity =  cftEditingController.text;
             ref2.set(companyModel.toMap());
 
             setState(() {

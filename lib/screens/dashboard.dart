@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:importmanagementsystemonline/screens/archive.dart';
 import 'package:importmanagementsystemonline/screens/profit_loss_screen.dart';
 import 'package:importmanagementsystemonline/screens/stone_sale_screen.dart';
 
@@ -169,6 +170,13 @@ class _DashboardState extends State<Dashboard> {
                   },
                     'assets/images/profit.png',
                     'Profit / Loss',
+                  ),
+
+                  getImageButton(() {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Archive()));
+                  },
+                    'assets/images/archive.jpg',
+                    'Coal Archive',
                   ),
 
                 ],

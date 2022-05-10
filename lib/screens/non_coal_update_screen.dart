@@ -42,7 +42,7 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
     super.initState();
     _process = false;
     _count = 1;
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.coalModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.coalModel["date"]);
     truckCountEditingController =
         new TextEditingController(text: widget.coalModel["truckCount"]);
     truckNumberEditingController =
@@ -102,7 +102,7 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -425,7 +425,7 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
 
       NonCoal coalModel = NonCoal();
       coalModel.lc =  widget.coalModel["lc"];
-    coalModel.date =   DateFormat('dd-MMM-yyyy').format(_date!);
+    coalModel.date =   DateFormat('yyyy-MM-dd').format(_date!);
     coalModel.invoice =_invoice.toString();
     coalModel.supplierName =     widget.coalModel["supplierName"];
     coalModel.port =     portEditingController.text;

@@ -295,9 +295,11 @@ class _CreateCompanyScreenState extends State<CreateCompanyScreen> {
           companyModel.paymentTypes = "0";
           companyModel.paymentInfo = "0";
           companyModel.date =
-              DateFormat('dd-MMM-yyyy').format(DateTime.now());
+              DateFormat('yyyy-MM-dd').format(DateTime.now());
           companyModel.year = "0";
           companyModel.docID = ref.id;
+          companyModel.rate = "0";
+          companyModel.quantity =  "0";
           ref.set(companyModel.toMap());
 
           FirebaseFirestore.instance

@@ -38,7 +38,7 @@ class _EmployeeSalaryUpdateScreenState
     _process = false;
     _count = 1;
     _invoice = int.parse(widget.employeeModel["invoice"]);
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.employeeModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.employeeModel["date"]);
 
     salaryAdvancedEditingController =
         new TextEditingController(text: widget.employeeModel["salaryAdvanced"]);
@@ -93,7 +93,7 @@ class _EmployeeSalaryUpdateScreenState
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -344,7 +344,7 @@ class _EmployeeSalaryUpdateScreenState
     if (_formKey.currentState!.validate() && _date != null) {
       final ref = FirebaseFirestore.instance.collection("employees").doc(widget.employeeModel["docID"]);
       Employee employeeModel = Employee();
-      employeeModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
+      employeeModel.date =    DateFormat('yyyy-MM-dd').format(_date!);
       employeeModel.name =     widget.employeeModel["name"];
       employeeModel.post =   widget.employeeModel["post"];
       employeeModel.salary =    widget.employeeModel["salary"];

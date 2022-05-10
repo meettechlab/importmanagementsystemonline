@@ -89,7 +89,7 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -398,7 +398,7 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    Text("Credit = Money spent from company And Debit = Money came in company", style: TextStyle(color: Colors.grey),),
+                    Text("[Only For Payment Time] Credit = Money spent from company And Debit = Money came in company", style: TextStyle(color: Colors.grey),),
                     SizedBox(
                       height: 10,
                     ),
@@ -445,9 +445,11 @@ class _CompanyPaymentScreenState extends State<CompanyPaymentScreen> {
       companyModel.invoice = _invoice.toString();
       companyModel.paymentTypes = _chosenPayment!;
       companyModel.paymentInfo = paymentInformationEditingController.text;
-      companyModel.date =  DateFormat('dd-MMM-yyyy').format(_date!);
+      companyModel.date =  DateFormat('yyyy-MM-dd').format(_date!);
       companyModel.year =DateFormat('MMM-yyyy').format(_date!);
       companyModel.docID =ref.id;
+      companyModel.rate ="0";
+      companyModel.quantity =  "0";
        ref.set(companyModel.toMap());
 
         FirebaseFirestore.instance

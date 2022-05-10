@@ -50,7 +50,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
   void initState() {
     super.initState();
 
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.lcModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.lcModel["date"]);
     truckCountEditingController =
         new TextEditingController(text: widget.lcModel["truckCount"]);
     truckNumberEditingController =
@@ -146,7 +146,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -727,7 +727,7 @@ class _IndividualLCUpdateScreenState extends State<IndividualLCUpdateScreen> {
       // final _purchaseBalance = (double.parse(cftEditingController.text) * double.parse(rateEditingController.text)).toString();
       //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
       LC lcModel = LC();
-      lcModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
+      lcModel.date =    DateFormat('yyyy-MM-dd').format(_date!);
       lcModel.truckCount =  truckCountEditingController.text;
       lcModel.truckNumber =    truckNumberEditingController.text;
       lcModel.invoice =     _invoice.toString();

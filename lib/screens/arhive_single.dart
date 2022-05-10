@@ -1,65 +1,66 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:importmanagementsystemonline/screens/single_coal_entry_screen.dart';
+import 'package:importmanagementsystemonline/screens/single_coal_update_screen.dart';
 import 'package:intl/intl.dart';
 
+import '../api/pdf_coal.dart';
+import '../model/coal.dart';
 import '../model/company.dart';
-import '../model/nonstone.dart';
+import '../model/invoiceCoal.dart';
 import 'dashboard.dart';
-import 'non_stone_entry_screen.dart';
-import 'non_stone_update_screen.dart';
 
-class NonStoneHistoryScreen extends StatefulWidget {
-  final QueryDocumentSnapshot<Object?> lcModel;
+class ArchiveSingle extends StatefulWidget {
+  final QueryDocumentSnapshot<Object?> coalModel;
 
-  const NonStoneHistoryScreen({Key? key, required this.lcModel})
+  const ArchiveSingle({Key? key, required this.coalModel})
       : super(key: key);
 
   @override
-  _NonStoneHistoryScreenState createState() =>
-      _NonStoneHistoryScreenState();
+  _ArchiveSingleState createState() => _ArchiveSingleState();
 }
 
-class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
-
+class _ArchiveSingleState extends State<ArchiveSingle> {
   double _totalStock = 0.0;
-  double _totalAmount = 0.0;
-  final lcOpenPriceEditingController = new TextEditingController();
-  final dutyCostEditingController = new TextEditingController();
-  final speedMoneyEditingController = new TextEditingController();
-  final rateEditingController = new TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool? _process;
-  int? _count;
-  bool disFAB = false;
-
+  int _totalAmount = 0;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _process = false;
-    _count = 1;
+
+
     FirebaseFirestore.instance
-        .collection('nonstone')
+        .collection('coalarchive')
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        if (doc["lcNumber"].toString().toLowerCase() ==
-            widget.lcModel.get("lcNumber").toString().toLowerCase()) {
+        if (doc["lc"].toString().toLowerCase() ==
+            widget.coalModel.get("lc").toString().toLowerCase()) {
           setState(() {
             _totalStock = double.parse((double.parse(_totalStock.toString()) +
-                double.parse(doc["cft"])).toStringAsFixed(3));
+                double.parse(doc["ton"])).toStringAsFixed(3));
           });
+
+
+          final _docList = [];
+          _docList.add(doc);
+
+          if (double.parse(_docList.last["totalPrice"]) > 0) {
+            _totalAmount = double.parse(_docList.last["totalPrice"]).floor();
+          }
         }
+
       }
     });
   }
+
   @override
   Widget build(BuildContext context) {
-
-    Widget buildSingleItem( lc) => Container(
+    Widget buildSingleItem(coal) => Container(
       padding: const EdgeInsets.all(15),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -77,7 +78,7 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["date"],
+                    coal["date"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -88,11 +89,11 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
               Column(
                 children: [
                   Text(
-                    "Invoice",
+                    "Truck Count",
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["invoice"],
+                    coal["truckCount"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -103,26 +104,11 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
               Column(
                 children: [
                   Text(
-                    "Truck No",
+                    "Truck Number",
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["truckCount"],
-                    style: TextStyle(color: Colors.grey, fontSize: 20),
-                  ),
-                ],
-              ),
-              SizedBox(
-                width: 70,
-              ),
-              Column(
-                children: [
-                  Text(
-                    "Truck Plate Number",
-                    style: TextStyle(color: Colors.blue, fontSize: 20),
-                  ),
-                  Text(
-                    lc["truckNumber"],
+                    coal["truckNumber"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -137,7 +123,7 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["port"],
+                    coal["port"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -148,11 +134,11 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
               Column(
                 children: [
                   Text(
-                    "Seller Name",
+                    "Supplier Name",
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["sellerName"],
+                    coal["supplierName"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -163,11 +149,11 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
               Column(
                 children: [
                   Text(
-                    "Seller Contact",
+                    "Supplier Contact",
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["sellerContact"],
+                    coal["contact"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -178,11 +164,11 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
               Column(
                 children: [
                   Text(
-                    "CFT",
+                    "Ton",
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["cft"],
+                    coal["ton"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
@@ -197,59 +183,34 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
                     style: TextStyle(color: Colors.blue, fontSize: 20),
                   ),
                   Text(
-                    lc["remarks"],
+                    coal["remarks"],
                     style: TextStyle(color: Colors.grey, fontSize: 20),
                   ),
                 ],
               ),
-
-
-               SizedBox(
-                    width: 70,
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      FirebaseFirestore.instance
-                          .collection('nonstone')
-                          .get()
-                          .then((QuerySnapshot querySnapshot) {
-                        for (var doc in querySnapshot.docs) {
-                          if(doc["lcNumber"] == lc["lcNumber"] && doc["invoice"] == lc["invoice"]){
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => NonStoneUpdateScreen(
-                                      lcModel: lc,
-                                    )));
-                          }
-                        }
-                      });
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Colors.red,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      FirebaseFirestore.instance
-                          .collection('nonstone')
-                          .get()
-                          .then((QuerySnapshot querySnapshot) {
-                        for (var doc in querySnapshot.docs) {
-                          if(doc["lcNumber"] == lc["lcNumber"] && doc["invoice"] == lc["invoice"]){
-                            setState(() {
-                              doc.reference.delete();
-                            });
-                          }
-                        }
-                      });
-                    },
-                    icon: Icon(
-                      Icons.delete,
-                      color: Colors.red,
-                    ),
-                  ),
+              SizedBox(
+                width: 70,
+              ),
+ IconButton(
+                onPressed: () {
+                  FirebaseFirestore.instance
+                      .collection('coalarchive')
+                      .get()
+                      .then((QuerySnapshot querySnapshot) {
+                    for (var doc in querySnapshot.docs) {
+                      if(doc["lc"] == coal["lc"] && doc["invoice"] == coal["invoice"]){
+                        setState(() {
+                          doc.reference.delete();
+                        });
+                      }
+                    }
+                  });
+                },
+                icon: Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+              ),
             ],
           ),
         ),
@@ -257,7 +218,7 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
     );
 
     final CollectionReference _collectionReference =
-    FirebaseFirestore.instance.collection("nonstone");
+    FirebaseFirestore.instance.collection("coalarchive");
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
@@ -272,8 +233,8 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
                 children: [
                   ...snapshot.data!.docs
                       .where((QueryDocumentSnapshot<Object?> element) =>
-                  element["lcNumber"].toString().toLowerCase() ==
-                      widget.lcModel.get("lcNumber").toString().toLowerCase() )
+                  element["lc"].toString().toLowerCase() ==
+                      widget.coalModel.get("lc").toString().toLowerCase() )
                       .map((QueryDocumentSnapshot<Object?> data) {
                     return buildSingleItem(data);
                   })
@@ -283,10 +244,12 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
           });
     }
 
+
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("LC Number ${widget.lcModel["lcNumber"]}"),
+        title: Text("LC Number ${widget.coalModel.get("lc")}"),
         actions: [
           TextButton(
               onPressed: (){
@@ -304,41 +267,34 @@ class _NonStoneHistoryScreenState extends State<NonStoneHistoryScreen> {
       ),
       body: Container(
         padding: EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
+        child:  Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "LC Number : ${widget.lcModel["lcNumber"]}",
-                    style: TextStyle(color: Colors.red, fontSize: 18),
+                    "LC Number : ${widget.coalModel.get("lc")}",
+                    style: TextStyle(color: Colors.red, fontSize: 25),
                   ),
                   Text(
-                    "Stock : $_totalStock CFT",
-                    style: TextStyle(color: Colors.red, fontSize: 18),
+                    "Stock : $_totalStock Ton",
+                    style: TextStyle(color: Colors.red, fontSize: 25),
                   ),
                   Text(
-                    "Total Balance : $_totalAmount TK",
-                    style: TextStyle(color: Colors.red, fontSize: 18),
+                    "Total Cost : $_totalAmount TK",
+                    style: TextStyle(color: Colors.red, fontSize: 25),
                   ),
                 ],
               ),
-              SizedBox(height: 20,),
-              Expanded(child: _buildListView()),
+              SizedBox(
+                height: 20,
+              ),
 
+              Expanded(child: _buildListView()),
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-         Navigator.push(context, MaterialPageRoute(builder: (context) => NonStoneEntryScreen(lcModel: widget.lcModel)));
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
-      ),
-    );
+      );
   }
+
 }

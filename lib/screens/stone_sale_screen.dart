@@ -24,6 +24,10 @@ class StoneSaleScreen extends StatefulWidget {
 class _StoneSaleScreenState extends State<StoneSaleScreen> {
   double _totalStock = 0.0;
   int _totalAmount = 0;
+  final TextEditingController searchController = TextEditingController();
+  bool search = false;
+  final TextEditingController yearSearchController = TextEditingController();
+  bool yearSearch = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -106,6 +110,97 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final nameSearchField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10)),
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: searchController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("name cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              searchController.text = value!;
+            },
+            onChanged: (value) {
+              setState(() {
+                search = true;
+                yearSearchController.clear();
+              });
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Search Company',
+              labelStyle: TextStyle(color: Colors.blue),
+              floatingLabelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
+    final yearSearchField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10)),
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: yearSearchController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("year cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              yearSearchController.text = value!;
+            },
+            onChanged: (value) {
+              setState(() {
+                yearSearch = true;
+                searchController.clear();
+              });
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Search Year',
+              labelStyle: TextStyle(color: Colors.blue),
+              floatingLabelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -136,6 +231,8 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
                   "Stock : $_totalStock CFT",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
+                nameSearchField,
+                yearSearchField,
                 Text(
                   "Total Sale : $_totalAmount TK",
                   style: TextStyle(color: Colors.red, fontSize: 18),
@@ -147,7 +244,7 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Divider(),
           ),
-          Expanded(child: _buildListView()),
+          Expanded(child: (search) ? _searchBuilder() : (yearSearch)? _yearSearchBuilder() :_buildListView()),
         ],
       ),
       floatingActionButton: _getFAB(),
@@ -158,9 +255,55 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
   final CollectionReference _collectionReference =
   FirebaseFirestore.instance.collection("stones");
 
+  Widget _yearSearchBuilder() {
+    return StreamBuilder<QuerySnapshot>(
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return ListView(
+              children: [
+                ...snapshot.data!.docs
+                    .where((QueryDocumentSnapshot<Object?> element) =>
+                    element["year"].contains(yearSearchController.text))
+                    .map((QueryDocumentSnapshot<Object?> data) {
+                  return buildSingleItem(data);
+                })
+              ],
+            );
+          }
+        });
+  }
+
+  Widget _searchBuilder() {
+    return StreamBuilder<QuerySnapshot>(
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return ListView(
+              children: [
+                ...snapshot.data!.docs
+                    .where((QueryDocumentSnapshot<Object?> element) =>
+                element["buyerName"].toString().toLowerCase().contains(searchController.text))
+                    .map((QueryDocumentSnapshot<Object?> data) {
+                  return buildSingleItem(data);
+                })
+              ],
+            );
+          }
+        });
+  }
+
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -448,20 +591,14 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
       );
 
 
-
-
-
   void generatePdf() async {
     final _list = <StoneSaleItem>[];
     final _docList = [];
     FirebaseFirestore.instance
-        .collection('stones')
+        .collection('stones').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-
-
-
 
           _list.add(new StoneSaleItem(
             doc["date"],
@@ -477,8 +614,6 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
             doc["paymentInformation"],
             doc["remarks"],
           ));
-
-
 
           _docList.add(doc);
 

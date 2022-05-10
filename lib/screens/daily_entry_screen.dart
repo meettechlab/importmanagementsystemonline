@@ -433,7 +433,7 @@ class _DailyEntryScreenState extends State<DailyEntryScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -1053,7 +1053,7 @@ class _DailyEntryScreenState extends State<DailyEntryScreen> {
                           ),
                     _isCompany
                         ? Text(
-                            "Credit = Money spent from company And Debit = Money came in company",
+                            "[Only For Payment Time] Credit = Money spent from company And Debit = Money came in company",
                             style: TextStyle(color: Colors.grey),
                           )
                         : _isEmployee
@@ -1119,7 +1119,7 @@ class _DailyEntryScreenState extends State<DailyEntryScreen> {
         }
         Daily dailyModel = Daily();
         dailyModel.invoice = _chosenCost! + _invoice.toString();
-        dailyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+        dailyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
         dailyModel.transport = transportEditingController.text;
         dailyModel.unload = unloadEditingController.text;
         dailyModel.depoRent = depoRentEditingController.text;
@@ -1190,9 +1190,11 @@ class _DailyEntryScreenState extends State<DailyEntryScreen> {
         companyModel.invoice = _invoiceC.toString();
         companyModel.paymentTypes = _chosenPayment!;
         companyModel.paymentInfo = paymentInformationEditingController.text;
-        companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+        companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
         companyModel.year = DateFormat('MMM-yyyy').format(_date!);
         companyModel.docID = ref2.id;
+        companyModel.rate = "0";
+        companyModel.quantity =  "0";
          ref2.set(companyModel.toMap());
 
         FirebaseFirestore.instance
@@ -1239,7 +1241,7 @@ class _DailyEntryScreenState extends State<DailyEntryScreen> {
         }
 
           Employee employeeModel = Employee();
-          employeeModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          employeeModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           employeeModel.name = _chosenEmployeeName!;
           employeeModel.post = post!;
           employeeModel.salary = salary!;

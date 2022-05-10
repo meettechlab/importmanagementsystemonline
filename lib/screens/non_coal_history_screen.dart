@@ -254,7 +254,7 @@ class _NonCoalHistoryScreenState extends State<NonCoalHistoryScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(

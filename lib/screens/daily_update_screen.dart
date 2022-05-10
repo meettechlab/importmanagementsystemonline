@@ -46,7 +46,7 @@ class _DailyUpdateScreenState extends State<DailyUpdateScreen> {
     _process = false;
     _count = 1;
     _chosenCost = widget.dailyModel["invoice"];
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.dailyModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.dailyModel["date"]);
 
     transportEditingController =
         new TextEditingController(text: widget.dailyModel["transport"]);
@@ -117,7 +117,7 @@ class _DailyUpdateScreenState extends State<DailyUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -654,7 +654,7 @@ class _DailyUpdateScreenState extends State<DailyUpdateScreen> {
           double.parse(extraEditingController.text);
       Daily dailyModel = Daily();
       dailyModel.invoice =     _chosenCost;
-    dailyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+    dailyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
     dailyModel.transport =    transportEditingController.text;
     dailyModel.unload =     unloadEditingController.text;
     dailyModel.depoRent =   depoRentEditingController.text;

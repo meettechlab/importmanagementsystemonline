@@ -139,7 +139,7 @@ class _DailyStoneScreenState extends State<DailyStoneScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -410,7 +410,7 @@ class _DailyStoneScreenState extends State<DailyStoneScreen> {
 
 
     FirebaseFirestore.instance
-        .collection('daily')
+        .collection('daily').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {

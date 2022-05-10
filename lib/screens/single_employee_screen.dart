@@ -235,7 +235,7 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -327,7 +327,7 @@ class _SingleEmployeeScreenState extends State<SingleEmployeeScreen> {
 
 
     FirebaseFirestore.instance
-        .collection('employees')
+        .collection('employees').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {

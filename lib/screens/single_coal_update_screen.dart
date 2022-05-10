@@ -47,7 +47,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
     _chosenPort = widget.coalModel["port"];
 
     _invoice = int.parse(widget.coalModel.get("invoice"));
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.coalModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.coalModel["date"]);
     truckCountEditingController =
         new TextEditingController(text: widget.coalModel["truckCount"]);
     truckNumberEditingController =
@@ -175,7 +175,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -421,7 +421,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
       final ref = FirebaseFirestore.instance.collection("coals").doc(widget.coalModel.get("docID"));
       Coal coalModel = Coal();
       coalModel.lc =   widget.coalModel.get("lc");
-      coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+      coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
       coalModel.invoice =  _invoice.toString();
       coalModel.supplierName = widget.coalModel.get("supplierName");
       coalModel.port = _chosenPort;

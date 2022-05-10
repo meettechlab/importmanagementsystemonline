@@ -2,12 +2,14 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../api/pdf_coal.dart';
 import '../model/coal.dart';
+import '../model/coal_archive.dart';
 import '../model/invoiceCoal.dart';
 import '../model/stone.dart';
 import 'coal_sale_entry_screen.dart';
@@ -25,10 +27,22 @@ class CoalSaleScreen extends StatefulWidget {
 class _CoalSaleScreenState extends State<CoalSaleScreen> {
   double _totalStock = 0.0;
   int _totalAmount = 0;
+
+  final rateEditingController = new TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool? _process;
+  int? _count;
+
+  final TextEditingController searchController = TextEditingController();
+  bool search = false;
+  final TextEditingController yearSearchController = TextEditingController();
+  bool yearSearch = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _process = false;
+    _count = 1;
 
     FirebaseFirestore.instance
         .collection('coals')
@@ -100,6 +114,191 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final rateField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
+            ],
+            autofocus: false,
+            controller: rateEditingController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("Rate cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              rateEditingController.text = value!;
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Year',
+              labelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
+    final addButton = Material(
+      elevation: (_process!) ? 0 : 5,
+      color: (_process!) ? Colors.blue.shade800 : Colors.blue,
+      borderRadius: BorderRadius.circular(30),
+      child: MaterialButton(
+        padding: EdgeInsets.fromLTRB(
+          100,
+          30,
+          100,
+          30,
+        ),
+        minWidth: 20,
+        onPressed: () {
+          setState(() {
+            _process = true;
+            _count = (_count! - 1);
+          });
+          (_count! < 0)
+              ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red, content: Text("Please Wait!!")))
+              : AddData();
+        },
+        child: (_process!)
+            ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Processing',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(
+              width: 20,
+            ),
+            Center(
+                child: SizedBox(
+                    height: 15,
+                    width: 15,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ))),
+          ],
+        )
+            : Text(
+          'Archive',
+          textAlign: TextAlign.center,
+          style:
+          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+    final nameSearchField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10)),
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: searchController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("name cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              searchController.text = value!;
+            },
+            onChanged: (value) {
+              setState(() {
+                search = true;
+                yearSearchController.clear();
+              });
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Search Company',
+              labelStyle: TextStyle(color: Colors.blue),
+              floatingLabelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
+    final yearSearchField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10)),
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: yearSearchController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("year cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              yearSearchController.text = value!;
+            },
+            onChanged: (value) {
+              setState(() {
+                yearSearch = true;
+                searchController.clear();
+              });
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Search Year',
+              labelStyle: TextStyle(color: Colors.blue),
+              floatingLabelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -130,6 +329,9 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
                   "Available Stock : $_totalStock Ton",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
+
+                nameSearchField,
+                yearSearchField,
                 Text(
                   "Total Sale : $_totalAmount TK",
                   style: TextStyle(color: Colors.red, fontSize: 18),
@@ -138,10 +340,22 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
             ),
           ),
           Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                rateField,
+                SizedBox(
+                  width: 20,
+                ),
+                addButton,
+              ],
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.all(8.0),
             child: Divider(),
           ),
-          Expanded(child: _buildListView()),
+          Expanded(child: (search) ? _searchBuilder() : (yearSearch)? _yearSearchBuilder() : _buildListView()),
         ],
       ),
       floatingActionButton: _getFAB(),
@@ -152,9 +366,55 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
   final CollectionReference _collectionReference =
   FirebaseFirestore.instance.collection("coals");
 
+  Widget _yearSearchBuilder() {
+    return StreamBuilder<QuerySnapshot>(
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return ListView(
+              children: [
+                ...snapshot.data!.docs
+                    .where((QueryDocumentSnapshot<Object?> element) =>
+                    element["year"].contains(yearSearchController.text))
+                    .map((QueryDocumentSnapshot<Object?> data) {
+                  return buildSingleItem(data);
+                })
+              ],
+            );
+          }
+        });
+  }
+
+  Widget _searchBuilder() {
+    return StreamBuilder<QuerySnapshot>(
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return ListView(
+              children: [
+                ...snapshot.data!.docs
+                    .where((QueryDocumentSnapshot<Object?> element) => element["lc"].toString().toLowerCase() == "sale" &&
+                    element["supplierName"].toString().toLowerCase().contains(searchController.text))
+                    .map((QueryDocumentSnapshot<Object?> data) {
+                  return buildSingleItem(data);
+                })
+              ],
+            );
+          }
+        });
+  }
+
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.orderBy("invoice",  descending: true).snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -428,12 +688,83 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
         ),
       );
 
+
+
+  void AddData() async {
+    try {
+      int _invoiceA  =  1;
+      FirebaseFirestore.instance
+          .collection('coals')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc in querySnapshot.docs) {
+          if (doc["year"].toString().contains(rateEditingController.text)&&doc["lc"].toString().toLowerCase() == "sale") {
+            /*FirebaseFirestore.instance
+                .collection('coalarchive')
+                .get()
+                .then((QuerySnapshot querySnapshot) {
+              for (var doc in querySnapshot.docs) {
+                if (!doc["archiveName"].toString().toLowerCase().contains("sale")) {
+                  if (_invoiceA <= int.parse(doc["archive"])) {
+                    _invoiceA = int.parse(doc["archive"]) + 1;
+                  }
+                }
+              }*/
+            var ref =
+            FirebaseFirestore.instance.collection("coalarchive").doc();
+            CoalArchive coalModel = CoalArchive();
+            coalModel.archive = _invoiceA.toString();
+            coalModel.archiveName =
+                doc["year"].toString().split("-").last + " : " + "Sale";
+            coalModel.lc = doc["lc"];
+            coalModel.date = doc["date"];
+            coalModel.invoice = doc["invoice"];
+            coalModel.supplierName = doc["supplierName"];
+            coalModel.port = doc["port"];
+            coalModel.ton = doc["ton"];
+            coalModel.rate = doc["rate"];
+            coalModel.totalPrice = doc["totalPrice"];
+            coalModel.paymentType = doc["paymentType"];
+            coalModel.paymentInformation = doc["paymentInformation"];
+            coalModel.credit = doc["credit"];
+            coalModel.debit = doc["debit"];
+            coalModel.remarks = doc["remarks"];
+            coalModel.year = doc["year"];
+            coalModel.truckCount = doc["truckCount"];
+            coalModel.truckNumber = doc["truckNumber"];
+            coalModel.contact = doc["contact"];
+            coalModel.docID = ref.id;
+            ref.set(coalModel.toMap());
+            _invoiceA = _invoiceA + 1;
+            doc.reference.delete();
+          }
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Colors.green, content: Text("Data archived!!")));
+        setState(() {
+          _process = false;
+          _count = 1;
+          rateEditingController.clear();
+        });
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.green, content: Text("Something wrong!!")));
+      setState(() {
+        _process = false;
+        _count = 1;
+        rateEditingController.clear();
+      });
+    }
+  }
+
+
   void generatePdf() async {
     final _list = <CoalItem>[];
 
     final _docList = [];
     FirebaseFirestore.instance
-        .collection('coals')
+        .collection('coals').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {

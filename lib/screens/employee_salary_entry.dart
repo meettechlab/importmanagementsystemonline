@@ -86,7 +86,7 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -366,7 +366,7 @@ class _EmployeeSalaryEntryScreenState extends State<EmployeeSalaryEntryScreen> {
         }
 
       Employee employeeModel = Employee();
-      employeeModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
+      employeeModel.date =    DateFormat('yyyy-MM-dd').format(_date!);
       employeeModel.name =     widget.employeeModel["name"];
       employeeModel.post =   widget.employeeModel["post"];
       employeeModel.salary =    widget.employeeModel["salary"];

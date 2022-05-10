@@ -42,7 +42,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
     _process = false;
     _count = 1;
     _lcNumber = widget.lcModel["lcNumber"];
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.lcModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.lcModel["date"]);
     truckCountEditingController =
         new TextEditingController(text: widget.lcModel["truckCount"]);
     truckNumberEditingController =
@@ -101,7 +101,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -434,7 +434,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
 
 
       NonStone lcModel = NonStone();
-      lcModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
+      lcModel.date =    DateFormat('yyyy-MM-dd').format(_date!);
       lcModel.truckCount =      truckCountEditingController.text;
       lcModel.truckNumber =    truckNumberEditingController.text;
       lcModel.invoice =  _invoice.toString();

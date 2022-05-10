@@ -14,9 +14,10 @@ class CompanyItem{
  final String debit;
  final String credit;
  final String paymentType;
- final String paymentInfo;
+ final String rate;
+ final String quantity;
   final String remarks;
 
   CompanyItem(this.date, this.debit, this.credit, this.paymentType,
-      this.paymentInfo, this.remarks);
+      this.rate, this.quantity, this.remarks);
 }

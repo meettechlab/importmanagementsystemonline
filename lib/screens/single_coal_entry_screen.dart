@@ -196,7 +196,7 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -454,7 +454,7 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
 
       Coal coalModel = Coal();
     coalModel.lc =   widget.coalModel.get("lc");
-    coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+    coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
     coalModel.invoice =  _invoice.toString();
     coalModel.supplierName = widget.coalModel.get("supplierName");
     coalModel.port = _chosenPort;

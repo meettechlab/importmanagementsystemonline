@@ -63,8 +63,9 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
         if (doc["lcNumber"].toString().toLowerCase() ==
             widget.lcModel.get("lcNumber").toString().toLowerCase()) {
           setState(() {
-            _totalStock =double.parse( (double.parse(_totalStock.toString()) +
-                double.parse(doc["cft"])).toStringAsFixed(3));
+            _totalStock = double.parse((double.parse(_totalStock.toString()) +
+                    double.parse(doc["cft"]))
+                .toStringAsFixed(3));
           });
 
           final _docList = [];
@@ -250,19 +251,18 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
             _process = true;
             _count = (_count! - 1);
           });
-          disFAB?_process = false: null;
-          disFAB?_count = 1:null;
-          setState(() {
+          disFAB ? _process = false : null;
+          disFAB ? _count = 1 : null;
+          setState(() {});
 
-          });
-
-         disFAB? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-             backgroundColor: Colors.green,
-             content: Text("LC Closed!!")))
-             :   (_count! < 0)
+          disFAB
               ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  backgroundColor: Colors.red, content: Text("Please Wait!!")))
-              : AddData();
+                  backgroundColor: Colors.green, content: Text("LC Closed!!")))
+              : (_count! < 0)
+                  ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      backgroundColor: Colors.red,
+                      content: Text("Please Wait!!")))
+                  : AddData();
         },
         child: (_process!)
             ? Row(
@@ -299,8 +299,6 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
       ),
     );
 
-
-
     final transferButton = Material(
       elevation: (_process2!) ? 0 : 5,
       color: (_process2!) ? Colors.blue.shade800 : Colors.blue,
@@ -318,44 +316,49 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
             _process2 = true;
             _count2 = (_count2! - 1);
           });
-          (widget.lcModel.get("port").toString().toLowerCase() == "shutarkandi") ? (_count2! < 0)
-              ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              backgroundColor: Colors.red, content: Text("Please Wait!!")))
-              : transferData(): ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              backgroundColor: Colors.red, content: Text("Port is not shutarkandi. Transaction denied!!"))) ;
+          (widget.lcModel.get("port").toString().toLowerCase() == "shutarkandi")
+              ? (_count2! < 0)
+                  ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      backgroundColor: Colors.red,
+                      content: Text("Please Wait!!")))
+                  : transferData()
+              : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  backgroundColor: Colors.red,
+                  content:
+                      Text("Port is not shutarkandi. Transaction denied!!")));
         },
         child: (_process2!)
             ? Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Processing',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(
-              width: 20,
-            ),
-            Center(
-                child: SizedBox(
-                    height: 15,
-                    width: 15,
-                    child: CircularProgressIndicator(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Processing',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
                       color: Colors.white,
-                      strokeWidth: 2,
-                    ))),
-          ],
-        )
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Center(
+                      child: SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ))),
+                ],
+              )
             : Text(
-          'Transfer Data To Crusher Stock ( Shutarkandi ) ',
-          textAlign: TextAlign.center,
-          style:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+                'Transfer Data To Crusher Stock ( Shutarkandi ) ',
+                textAlign: TextAlign.center,
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
       ),
     );
     Widget buildSingleItem(lc) => Container(
@@ -565,7 +568,10 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+          stream: _collectionReference
+              .orderBy("date", descending: true)
+              .snapshots()
+              .asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -647,17 +653,14 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
           title: Text("LC Number ${widget.lcModel["lcNumber"]}"),
           actions: [
             TextButton(
-                onPressed: (){
-                  Navigator.push(
-                      context, MaterialPageRoute(builder: (context) => Dashboard()));
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Dashboard()));
                 },
                 child: Text(
                   "Dashboard",
-                  style: TextStyle(
-                      color: Colors.white
-                  ),
-                )
-            )
+                  style: TextStyle(color: Colors.white),
+                ))
           ],
         ),
         body: Container(
@@ -724,15 +727,17 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
       final ref = FirebaseFirestore.instance.collection("lcs").doc();
       final _stock = _totalStock.toStringAsFixed(3);
       final _purchaseBalance = (double.parse(_totalStock.toString()) *
-              double.parse(rateEditingController.text)).floor()
+              double.parse(rateEditingController.text))
+          .floor()
           .toString();
       final _totalBalance = (double.parse(_purchaseBalance) +
               double.parse(lcOpenPriceEditingController.text) +
               double.parse(dutyCostEditingController.text) +
-              double.parse(speedMoneyEditingController.text)).floor()
+              double.parse(speedMoneyEditingController.text))
+          .floor()
           .toString();
       LC lcModel = LC();
-      lcModel.date = DateFormat('dd-MMM-yyyy').format(DateTime.now());
+      lcModel.date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       lcModel.truckCount = "LC Closed";
       lcModel.truckNumber = "LC Closed";
       lcModel.invoice = "LC Closed";
@@ -751,7 +756,7 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
       lcModel.remarks = "LC Closed";
       lcModel.lcNumber = widget.lcModel["lcNumber"];
       lcModel.totalBalance = _totalBalance;
-      lcModel.year = widget.lcModel["date"];
+      lcModel.year = widget.lcModel["year"];
       lcModel.docID = ref.id;
       await ref.set(lcModel.toMap());
 
@@ -769,7 +774,6 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
           }
         }
 
-
         final ref2 = FirebaseFirestore.instance.collection("companies").doc();
         Company companyModel = Company();
         companyModel.id = "stonestock" + widget.lcModel["lcNumber"];
@@ -778,13 +782,16 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
         companyModel.address = "0";
         companyModel.credit = "0";
         companyModel.debit = _purchaseBalance;
-        companyModel.remarks = "stonestock" + widget.lcModel.get("lcNumber") + " : " + _stock + " CFT" ;
-        companyModel.invoice =  _invoice.toString();
+        companyModel.remarks = "stonestock" +
+            widget.lcModel.get("lcNumber") ;
+        companyModel.invoice = _invoice.toString();
         companyModel.paymentTypes = "0";
         companyModel.paymentInfo = "0";
         companyModel.date = widget.lcModel.get("date");
         companyModel.year = "0";
         companyModel.docID = ref2.id;
+        companyModel.rate = rateEditingController.text;
+        companyModel.quantity =  _stock;
         ref2.set(companyModel.toMap());
         setState(() {
           _totalAmount = double.parse(_totalBalance).floor();
@@ -813,19 +820,19 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
     }
   }
 
-  void transferData(){
-  //  var _rateS = 0.0;
-   // FirebaseFirestore.instance
-   //     .collection('lcs')
-   //     .get()
-     //   .then((QuerySnapshot querySnapshot) {
-   //   for (var doc in querySnapshot.docs) {
+  void transferData() {
+    //  var _rateS = 0.0;
+    // FirebaseFirestore.instance
+    //     .collection('lcs')
+    //     .get()
+    //   .then((QuerySnapshot querySnapshot) {
+    //   for (var doc in querySnapshot.docs) {
     //if (doc["lcNumber"] == widget.lcModel.get("lcNumber") &&
-      //      doc["port"].toString().toLowerCase() == "shutarkandi" && double.parse(doc["rate"]) > 0) {
-         //   _rateS = double.parse(doc["rate"]);
+    //      doc["port"].toString().toLowerCase() == "shutarkandi" && double.parse(doc["rate"]) > 0) {
+    //   _rateS = double.parse(doc["rate"]);
     //    }
     //  }
-  //  });
+    //  });
     FirebaseFirestore.instance
         .collection('lcs')
         .get()
@@ -843,7 +850,7 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
           final _fiveToTenS = (_cftS * 7) / 100;
           final _totalS = _threeToFourS + _oneToSixS + _halfS + _fiveToTenS;
           final _extraS = _totalS - _cftS;
-     //     final _priceS = _rateS * _cftS;
+          //     final _priceS = _rateS * _cftS;
 
           final _docList = [];
           int _invoice = 1;
@@ -862,7 +869,7 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
             }
             CStock cStockModel = CStock();
             cStockModel.invoice = _invoice.toString();
-            cStockModel.date =  DateFormat('dd-MMM-yyyy').format(DateTime.now());
+            cStockModel.date = DateFormat('yyyy-MM-dd').format(DateTime.now());
             cStockModel.truckCount = doc["truckCount"];
             cStockModel.port = doc["port"];
             cStockModel.ton = _cftS.toString();
@@ -877,8 +884,8 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
             cStockModel.supplierName = doc["sellerName"];
             cStockModel.supplierContact = doc["sellerContact"];
             cStockModel.year = doc["year"];
-            cStockModel.rate = "0";// _rateS.toString();
-            cStockModel.price = "0" ;//_priceS.toString();
+            cStockModel.rate = "0"; // _rateS.toString();
+            cStockModel.price = "0"; //_priceS.toString();
             cStockModel.truckNumber = doc["truckNumber"];
             cStockModel.docID = ref.id;
             ref.set(cStockModel.toMap());
@@ -888,23 +895,23 @@ class _IndividualLCHistoryScreenState extends State<IndividualLCHistoryScreen> {
               _count2 = 1;
             });
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                backgroundColor: Colors.green, content: Text("Data Transferred!!")));
-
+                backgroundColor: Colors.green,
+                content: Text("Data Transferred!!")));
           });
         }
       }
     });
-    }
+  }
 
   void generatePdf() async {
     final _list = <StonePurchaseItem>[];
-   var rate2;
-  var  lcOpenPrice2;
-   var dutyCost2;
-var    speedMoney2;
+    var rate2;
+    var lcOpenPrice2;
+    var dutyCost2;
+    var speedMoney2;
 
     FirebaseFirestore.instance
-        .collection('lcs')
+        .collection('lcs').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
@@ -919,11 +926,11 @@ var    speedMoney2;
             doc["remarks"],
           ));
 
-          if(doc["rate"] != "0"){
+          if (doc["rate"] != "0") {
             rate2 = doc["rate"];
-              lcOpenPrice2 = doc["lcOpenPrice"];
-             dutyCost2 = doc["dutyCost"];
-                speedMoney2 = doc["speedMoney"];
+            lcOpenPrice2 = doc["lcOpenPrice"];
+            dutyCost2 = doc["dutyCost"];
+            speedMoney2 = doc["speedMoney"];
           }
         }
       }
@@ -931,19 +938,15 @@ var    speedMoney2;
           widget.lcModel["lcNumber"],
           widget.lcModel["sellerName"],
           widget.lcModel["sellerContact"],
-          rate2,
-          lcOpenPrice2,
-          dutyCost2,
-          speedMoney2,
+          rate2 ?? "0",
+          lcOpenPrice2?? "0",
+          dutyCost2 ?? "0",
+          speedMoney2 ?? "0",
           _list);
 
       final pdfFile = PdfInvoiceApiStonePurchase.generate(invoice);
     });
-
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.green, content: Text("Pdf Generated!!")));
   }
-
-
-
 }

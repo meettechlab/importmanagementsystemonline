@@ -145,7 +145,7 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -676,7 +676,7 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
 
       Coal coalModel = Coal();
       coalModel.lc =  "sale";
-      coalModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+      coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
       coalModel.invoice = _invoice.toString();
       coalModel.supplierName = _chosenCompanyName!;
       coalModel.port = _chosenPort;
@@ -717,13 +717,15 @@ class _CoalSaleEntryScreenState extends State<CoalSaleEntryScreen> {
           companyModel.address = "0";
           companyModel.credit = _totalSale ;
           companyModel.debit = "0";
-          companyModel.remarks = "Coal Sale : " + tonEditingController.text + " Ton";
+          companyModel.remarks = "Coal Sale";
           companyModel.invoice = _invoiceC.toString();
           companyModel.paymentTypes = "0";
           companyModel.paymentInfo = "0";
-          companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           companyModel.year = DateFormat('MMM-yyyy').format(_date!);
           companyModel.docID = ref2.id;
+          companyModel.rate = rateEditingController.text;
+          companyModel.quantity =  tonEditingController.text;
           ref2.set(companyModel.toMap());
           setState(() {
             _process = false;

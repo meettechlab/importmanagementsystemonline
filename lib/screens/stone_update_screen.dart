@@ -51,7 +51,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
     _chosenCompanyName = widget.stoneModel["buyerName"];
     _chosenPayment = widget.stoneModel["paymentType"];
     _invoice = int.parse(widget.stoneModel["invoice"]);
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.stoneModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.stoneModel["date"]);
     truckCountEditingController =
         new TextEditingController(text: widget.stoneModel["truckCount"]);
     truckNumberEditingController =
@@ -128,7 +128,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -752,7 +752,7 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
               double.parse(rateEditingController.text)).floor()
           .toString();
       Stone stoneModel = Stone();
-      stoneModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+      stoneModel.date = DateFormat('yyyy-MM-dd').format(_date!);
       stoneModel.truckCount = truckCountEditingController.text;
       stoneModel.truckNumber = truckNumberEditingController.text;
       stoneModel.invoice = _invoice.toString();
@@ -796,13 +796,15 @@ class _StoneUpdateScreenState extends State<StoneUpdateScreen> {
       companyModel.address = "0";
       companyModel.credit = _totalSale;
       companyModel.debit = "0";
-      companyModel.remarks = "Stone Sale : " + cftEditingController.text + " CFT";
+      companyModel.remarks = "Stone Sale";
       companyModel.invoice = _invoiceC;
       companyModel.paymentTypes = "0";
       companyModel.paymentInfo = "0";
-      companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+      companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
       companyModel.year = DateFormat('MMM-yyyy').format(_date!);
       companyModel.docID = ref2.id;
+        companyModel.rate = rateEditingController.text;
+        companyModel.quantity =  cftEditingController.text;
        ref2.set(companyModel.toMap());
 
       setState(() {

@@ -24,6 +24,8 @@ class SingleCompanyScreen extends StatefulWidget {
 
 class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
   int _due = 0;
+  int _get = 0;
+  bool? get;
 
   @override
   void initState() {
@@ -41,7 +43,20 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
           });
         }
       }
+
+
+      if(_due >0){
+        setState(() {
+          get = false;
+        });
+      }else{
+        setState(() {
+          get = true;
+          _get = _due.abs();
+        });
+      }
     });
+
   }
 
   Widget _getFAB() {
@@ -185,6 +200,36 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
                   Column(
                     children: [
                       Text(
+                        "Rate",
+                        style: TextStyle(color: Colors.blue, fontSize: 20),
+                      ),
+                      Text(
+                        company["rate"],
+                        style: TextStyle(color: Colors.grey, fontSize: 20),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: 70,
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        "Quantity",
+                        style: TextStyle(color: Colors.blue, fontSize: 20),
+                      ),
+                      Text(
+                        company["quantity"],
+                        style: TextStyle(color: Colors.grey, fontSize: 20),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: 70,
+                  ),
+                  Column(
+                    children: [
+                      Text(
                         "Remarks",
                         style: TextStyle(color: Colors.blue, fontSize: 20),
                       ),
@@ -257,7 +302,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -324,7 +369,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Due : $_due TK",
+                  (get==true) ? "I will get : $_get TK" :  "I will give : $_due TK",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
               ],
@@ -342,7 +387,7 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
     final _docList = [];
 
     FirebaseFirestore.instance
-        .collection('companies')
+        .collection('companies').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
@@ -354,7 +399,8 @@ class _SingleCompanyScreenState extends State<SingleCompanyScreen> {
               doc["debit"],
               doc["credit"],
               doc["paymentTypes"],
-              doc["paymentInfo"],
+              doc["rate"],
+              doc["quantity"],
               doc["remarks"],));
 
 

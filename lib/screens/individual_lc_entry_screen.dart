@@ -139,7 +139,7 @@ class _IndividualLCEntryScreenState extends State<IndividualLCEntryScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -735,7 +735,7 @@ class _IndividualLCEntryScreenState extends State<IndividualLCEntryScreen> {
 
 
       LC lcModel = LC();
-      lcModel.date =    DateFormat('dd-MMM-yyyy').format(_date!);
+      lcModel.date =    DateFormat('yyyy-MM-dd').format(_date!);
       lcModel.truckCount =  truckCountEditingController.text;
       lcModel.truckNumber =    truckNumberEditingController.text;
       lcModel.invoice =     _invoice.toString();

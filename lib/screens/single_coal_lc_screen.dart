@@ -358,7 +358,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
 
     Widget _buildListView() {
       return StreamBuilder<QuerySnapshot>(
-          stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+          stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(
@@ -519,7 +519,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
    coalModel.credit =  _totalPrice;
    coalModel.debit =  "0";
    coalModel.remarks =  "LC Closed";
-   coalModel.year =  widget.coalModel.get("date");
+   coalModel.year =  widget.coalModel.get("year");
     coalModel.truckCount = "LC Closed";
    coalModel.truckNumber =  "LC Closed";
   coalModel.contact =   widget.coalModel.get("contact");
@@ -551,13 +551,15 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
         companyModel.address = "0";
         companyModel.credit ="0" ;
         companyModel.debit = _totalPrice;
-        companyModel.remarks = "Coal Purchase :" + widget.coalModel.get("lc") + " : " + _totalStock.toString() + " Ton";
+        companyModel.remarks = "Coal Purchase :" + widget.coalModel.get("lc");
         companyModel.invoice = _invoiceC.toString();
         companyModel.paymentTypes = "0";
         companyModel.paymentInfo = "0";
         companyModel.date = widget.coalModel.get("date");
         companyModel.year = "0";
         companyModel.docID = ref2.id;
+        companyModel.rate = rateEditingController.text;
+        companyModel.quantity =  _totalStock.toString();
         ref2.set(companyModel.toMap());
 
 
@@ -586,7 +588,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
    var rate ;
 
     FirebaseFirestore.instance
-        .collection('coals')
+        .collection('coals').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
@@ -615,7 +617,7 @@ class _SingleCoalLCScreenState extends State<SingleCoalLCScreen> {
 
 
       final invoice = InvoiceCoal(_totalStock.toString(), _totalAmount.toString(),
-          widget.coalModel.get("lc"), rate, _list);
+          widget.coalModel.get("lc"), rate ?? "0", _list);
 
       final pdfFile = PdfCoal.generate(invoice, false);
     });

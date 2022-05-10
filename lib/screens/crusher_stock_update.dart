@@ -51,7 +51,7 @@ class _CrusherStockUpdateScreenState extends State<CrusherStockUpdateScreen> {
     _chosenCompanyName = widget.cStock["supplierName"];
     _chosenPort = widget.cStock["port"];
     _invoice = int.parse(widget.cStock["invoice"]);
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.cStock["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.cStock["date"]);
 
     truckCountEditingController =
         new TextEditingController(text: widget.cStock["truckCount"]);
@@ -122,7 +122,7 @@ class _CrusherStockUpdateScreenState extends State<CrusherStockUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -611,7 +611,7 @@ class _CrusherStockUpdateScreenState extends State<CrusherStockUpdateScreen> {
 
         CStock cStockModel = CStock();
         cStockModel.invoice =    _invoice.toString();
-        cStockModel.date =     DateFormat('dd-MMM-yyyy').format(_date!);
+        cStockModel.date =     DateFormat('yyyy-MM-dd').format(_date!);
         cStockModel.truckCount =   truckCountEditingController.text;
         cStockModel.port =    _chosenPort!;
         cStockModel.ton =   tonEditingController.text;
@@ -655,13 +655,15 @@ class _CrusherStockUpdateScreenState extends State<CrusherStockUpdateScreen> {
         companyModel.address =  "0";
         companyModel.credit =   "0" ;
         companyModel.debit =   _priceS.floor().toString();
-        companyModel.remarks =  "Crusher Stock Shutarkandi  : " +  tonEditingController.text + " CFT";
+        companyModel.remarks =  "Crusher Stock Shutarkandi";
         companyModel.invoice =  _invoiceC;
         companyModel.paymentTypes =  "0";
         companyModel.paymentInfo =  "0";
-        companyModel.date =   DateFormat('dd-MMM-yyyy').format(_date!);
+        companyModel.date =   DateFormat('yyyy-MM-dd').format(_date!);
         companyModel.year =    DateFormat('MMM-yyyy').format(_date!);
         companyModel.docID = ref2.id;
+          companyModel.rate = rateEditingController.text;
+          companyModel.quantity =  tonEditingController.text;
            ref2.set(companyModel.toMap());
         setState(() {
           _process = false;
@@ -676,7 +678,7 @@ class _CrusherStockUpdateScreenState extends State<CrusherStockUpdateScreen> {
       } else {
         CStock cStockModel = CStock();
         cStockModel.invoice = _invoice.toString();
-        cStockModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+        cStockModel.date = DateFormat('yyyy-MM-dd').format(_date!);
         cStockModel.truckCount = truckCountEditingController.text;
         cStockModel.port = _chosenPort!;
         cStockModel.ton = tonEditingController.text;
@@ -719,13 +721,15 @@ class _CrusherStockUpdateScreenState extends State<CrusherStockUpdateScreen> {
           companyModel.address = "0";
           companyModel.credit = "0" ;
           companyModel.debit = _priceT.floor().toString();
-          companyModel.remarks = "Crusher Stock Tamabil : " +  tonEditingController.text + " CFT";
+          companyModel.remarks = "Crusher Stock Tamabil";
           companyModel.invoice = _invoiceC;
           companyModel.paymentTypes = "0";
           companyModel.paymentInfo = "0";
-          companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+          companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
           companyModel.year = DateFormat('MMM-yyyy').format(_date!);
           companyModel.docID = ref2.id;
+          companyModel.rate = rateEditingController.text;
+          companyModel.quantity =  tonEditingController.text;
           ref2.set(companyModel.toMap());
 
           setState(() {

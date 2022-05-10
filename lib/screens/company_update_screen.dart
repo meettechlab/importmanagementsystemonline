@@ -42,7 +42,7 @@ class _CompanyUpdateScreenState extends State<CompanyUpdateScreen> {
     _process = false;
     _count = 1;
     _invoice = int.parse(widget.companyModel["invoice"]);
-    _date = DateFormat("dd-MMM-yyyy").parse(widget.companyModel["date"]);
+    _date = DateFormat("yyyy-MM-dd").parse(widget.companyModel["date"]);
     _chosenPayment = widget.companyModel["paymentTypes"];
 
     if (int.parse(widget.companyModel["debit"]) > 0) {
@@ -104,7 +104,7 @@ class _CompanyUpdateScreenState extends State<CompanyUpdateScreen> {
               child: Text(
                 (_date == null)
                     ? 'Pick Date'
-                    : DateFormat('dd-MMM-yyyy').format(_date!),
+                    : DateFormat('yyyy-MM-dd').format(_date!),
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -445,9 +445,11 @@ class _CompanyUpdateScreenState extends State<CompanyUpdateScreen> {
       companyModel.invoice = _invoice.toString();
       companyModel.paymentTypes = _chosenPayment!;
       companyModel.paymentInfo = paymentInformationEditingController.text;
-      companyModel.date = DateFormat('dd-MMM-yyyy').format(_date!);
+      companyModel.date = DateFormat('yyyy-MM-dd').format(_date!);
       companyModel.year = DateFormat('MMM-yyyy').format(_date!);
       companyModel.docID = widget.companyModel["docID"];
+      companyModel.rate = "0";
+      companyModel.quantity =  "0";
       await ref.set(companyModel.toMap());
 
       FirebaseFirestore.instance

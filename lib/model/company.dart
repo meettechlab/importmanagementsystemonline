@@ -13,6 +13,8 @@ class Company {
     String? date;
     String? year;
     String? docID;
+    String? rate;
+    String? quantity;
 
 
   Company({
@@ -28,7 +30,9 @@ class Company {
     this.paymentInfo,
     this.date,
     this.year,
-    this.docID
+    this.docID,
+    this.rate,
+    this.quantity,
   });
 
 
@@ -46,7 +50,9 @@ class Company {
       paymentInfo: map['paymentInfo'],
       date: map['date'],
       year: map['year'],
-        docID: map['docID']
+        docID: map['docID'],
+        rate: map['rate'],
+        quantity: map['quantity']
     );
   }
 
@@ -64,7 +70,9 @@ class Company {
       'paymentInfo': paymentInfo,
       'date': date,
       'year': year,
-      'docID': docID
+      'docID': docID,
+      'rate': rate,
+      'quantity': quantity
     };
   }
 }

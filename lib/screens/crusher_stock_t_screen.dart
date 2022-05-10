@@ -165,7 +165,7 @@ class _CrusherStockTScreenState extends State<CrusherStockTScreen> {
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
-        stream: _collectionReference.orderBy("invoice", descending: true).snapshots().asBroadcastStream(),
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -494,7 +494,7 @@ class _CrusherStockTScreenState extends State<CrusherStockTScreen> {
     final _list = <CrusherStockItem>[];
 
     FirebaseFirestore.instance
-        .collection('cStocks')
+        .collection('cStocks').orderBy("date", descending: true)
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {

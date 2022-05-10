@@ -57,7 +57,8 @@ class PdfCompany {
       'Credit',
       'Debit',
       'Payment Type',
-      'Payment Info',
+      'Rate',
+      'Quantity',
       'Remarks'
     ];
 
@@ -67,7 +68,8 @@ class PdfCompany {
         item.credit,
         item.debit,
         item.paymentType,
-        item.paymentInfo,
+        item.rate,
+        item.quantity,
         item.remarks
       ];
     }).toList();
