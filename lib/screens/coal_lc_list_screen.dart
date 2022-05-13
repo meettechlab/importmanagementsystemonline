@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:importmanagementsystemonline/model/coal_archive.dart';
 import 'package:importmanagementsystemonline/screens/archive.dart';
 import 'package:importmanagementsystemonline/screens/single_coal_lc_screen.dart';
+import 'package:intl/intl.dart';
 import '../model/coal.dart';
 import '../model/company.dart';
 import '../model/stone.dart';
@@ -20,10 +21,10 @@ class CoalLCListScreen extends StatefulWidget {
 }
 
 class _CoalLCListScreenState extends State<CoalLCListScreen> {
+  DateTime? _date;
   double _totalStock = 0.0;
   int _totalAmount = 0;
-  final rateEditingController = new TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+
   bool? _process;
   int? _count;
 
@@ -60,54 +61,62 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final rateField = Container(
-        width: MediaQuery.of(context).size.width / 5,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'(^\d*\.?\d*)'))
-            ],
-            autofocus: false,
-            controller: rateEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Rate cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              rateEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
+    final pickDate = Container(
+      child: Row(
+        children: [
+          SizedBox(
+            width: 10,
+            height: 20,
+          ),
+          Material(
+            elevation: 5,
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(10),
+            child: MaterialButton(
+              padding: EdgeInsets.fromLTRB(
+                10,
+                10,
+                10,
+                10,
               ),
-              labelText: 'Year',
-              labelStyle: TextStyle(color: Colors.blue),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+              minWidth: MediaQuery.of(context).size.width / 6,
+              onPressed: () {
+                showDatePicker(
+                  context: context,
+                  firstDate: DateTime(1990, 01),
+                  lastDate: DateTime(2101),
+                  initialDate: _date ?? DateTime.now(),
+                ).then((value) {
+                  setState(() {
+                    _date = value;
+                  });
+                });
+              },
+              child: Text(
+                (_date == null)
+                    ? 'Pick Year'
+                    : DateFormat('yyyy').format(_date!),
+                textAlign: TextAlign.center,
+                style:
+                TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            )));
+            ),
+          )
+        ],
+      ),
+    );
+
 
     final addButton = Material(
       elevation: (_process!) ? 0 : 5,
-      color: (_process!) ? Colors.blue.shade800 : Colors.blue,
+      color: (_process!) ? Colors.red.shade800 : Colors.red,
       borderRadius: BorderRadius.circular(30),
       child: MaterialButton(
         padding: EdgeInsets.fromLTRB(
-          100,
-          30,
-          100,
-          30,
+          15,
+         10,
+          15,
+         10,
         ),
         minWidth: 20,
         onPressed: () {
@@ -118,7 +127,26 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
           (_count! < 0)
               ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   backgroundColor: Colors.red, content: Text("Please Wait!!")))
-              : AddData();
+              :   showDialog(
+              context: context,
+              builder: (BuildContext context)=>AlertDialog(
+                title: Text("Confirm"),
+                content: Text("Do you want to archive it?"),
+                actions: [
+                  IconButton(
+                      icon: new Icon(Icons.close),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                  IconButton(
+                      icon: new Icon(Icons.archive),
+                      onPressed: () {
+                        AddData();
+                        Navigator.pop(context);
+                      })
+                ],
+              )
+          );;
         },
         child: (_process!)
             ? Row(
@@ -138,8 +166,8 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
                   ),
                   Center(
                       child: SizedBox(
-                          height: 15,
-                          width: 15,
+                          height: 10,
+                          width: 10,
                           child: CircularProgressIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
@@ -192,7 +220,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: [
-                rateField,
+                pickDate,
                 SizedBox(
                   width: 20,
                 ),
@@ -404,11 +432,24 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
     try {
       int _invoiceA  =  1;
       FirebaseFirestore.instance
+          .collection('coalarchive')
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        for (var doc2 in querySnapshot.docs) {
+          if (doc2["archiveName"].toString() ==
+              DateFormat('yyyy').format(_date!) + " : " + "Purchase") {
+            if (_invoiceA <= int.parse(doc2["archive"])) {
+              _invoiceA = int.parse(doc2["archive"]) + 1;
+            }
+          }
+        }
+      });
+    await  FirebaseFirestore.instance
           .collection('coals')
           .get()
           .then((QuerySnapshot querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          if (doc["year"].toString().contains(rateEditingController.text) &&doc["lc"].toString().toLowerCase() != "sale" ) {
+          if (doc["year"].toString().contains(DateFormat('yyyy').format(_date!)) &&doc["lc"].toString().toLowerCase() != "sale" ) {
             /*FirebaseFirestore.instance
                 .collection('coalarchive')
                 .get()
@@ -420,6 +461,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
                   }
                 }
               }*/
+
               var ref =
                   FirebaseFirestore.instance.collection("coalarchive").doc();
                CoalArchive coalModel = CoalArchive();
@@ -447,6 +489,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
               ref.set(coalModel.toMap());
               _invoiceA = _invoiceA + 1;
               doc.reference.delete();
+              print(_invoiceA);
           }
         }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -454,7 +497,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
         setState(() {
           _process = false;
           _count = 1;
-          rateEditingController.clear();
+          _date = null;
         });
       });
     } catch (e) {
@@ -463,7 +506,7 @@ class _CoalLCListScreenState extends State<CoalLCListScreen> {
       setState(() {
         _process = false;
         _count = 1;
-        rateEditingController.clear();
+        _date = null;
       });
     }
   }

@@ -474,18 +474,18 @@ class _ArchiveSaleState extends State<ArchiveSale> {
                   }
                 });
 
-                FirebaseFirestore.instance
-                    .collection('companies')
-                    .get()
-                    .then((QuerySnapshot querySnapshot) {
-                  for (var doc in querySnapshot.docs) {
-                    if( doc["id"] ==  "coalsale" + coal["invoice"]){
-                      setState(() {
-                        doc.reference.delete();
-                      });
-                    }
-                  }
-                });
+                // FirebaseFirestore.instance
+                //     .collection('companies')
+                //     .get()
+                //     .then((QuerySnapshot querySnapshot) {
+                //   for (var doc in querySnapshot.docs) {
+                //     if( doc["id"] ==  "coalsale" + coal["invoice"]){
+                //       setState(() {
+                //         doc.reference.delete();
+                //       });
+                //     }
+                //   }
+                // });
               },
               icon: Icon(
                 Icons.delete,

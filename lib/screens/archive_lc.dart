@@ -225,18 +225,18 @@ class _ArchiveLCState extends State<ArchiveLC> {
                   }
                 });
 
-                FirebaseFirestore.instance
-                    .collection('companies')
-                    .get()
-                    .then((QuerySnapshot querySnapshot) {
-                  for (var doc in querySnapshot.docs) {
-                    if(doc["id"] == "coalstock" + coal["lc"]){
-                      setState(() {
-                        doc.reference.delete();
-                      });
-                    }
-                  }
-                });
+                // FirebaseFirestore.instance
+                //     .collection('companies')
+                //     .get()
+                //     .then((QuerySnapshot querySnapshot) {
+                //   for (var doc in querySnapshot.docs) {
+                //     if(doc["id"] == "coalstock" + coal["lc"]){
+                //       setState(() {
+                //         doc.reference.delete();
+                //       });
+                //     }
+                //   }
+                // });
               },
               icon: Icon(
                 Icons.delete,

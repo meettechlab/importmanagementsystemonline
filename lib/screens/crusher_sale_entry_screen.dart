@@ -484,7 +484,7 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
                 ],
               )
             : Text(
-                'Add New Stock',
+                'Add New Sale',
                 textAlign: TextAlign.center,
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
