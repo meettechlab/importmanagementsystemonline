@@ -29,37 +29,52 @@ class PdfCrusherSale {
         pdf);
   }
 
-  static Widget buildTitle(InvoiceCrusherSale invoice) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Date : ' + DateFormat('dd-MMM-yyyy').format(DateTime.now()),
-            style: TextStyle(
-              fontSize: 10,
-            )),
-        SizedBox(height: 2 * PdfPageFormat.cm),
-        Text('Port : ' + invoice.items[0].port,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        SizedBox(height: 0.8 * PdfPageFormat.cm),
-        Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('3/4 : ' + invoice.threeToFour,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              Text('16 mm : ' + invoice.sixteen,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-            ]),
-        SizedBox(height: 0.1 * PdfPageFormat.cm),
-        Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('1/2 : ' + invoice.half,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-              Text('5/10 : ' + invoice.fiveToTen,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-            ]),
-        SizedBox(height: 0.8 * PdfPageFormat.cm),
-      ]);
+  static Widget buildTitle(InvoiceCrusherSale invoice) {
+    final netThreeToFour = invoice.items.map((item) => item.threeToFour).toList();
+    final netSixteen = invoice.items.map((item) => item.sixteen).toList();
+    final netHalf = invoice.items.map((item) => item.half).toList();
+    final netFiveToTen = invoice.items.map((item) => item.fiveToTen).toList();
+    double _netThreeToFour = 0.0;
+    double _netSixteen = 0.0;
+    double _netHalf = 0.0;
+    double _netFiveToTen = 0.0;
+    for (int i = 0; i < netThreeToFour.length; i++) {
+      _netThreeToFour = _netThreeToFour + double.parse(netThreeToFour[i]);
+      _netSixteen = _netSixteen + double.parse(netSixteen[i]);
+      _netHalf = _netHalf + double.parse(netHalf[i]);
+      _netFiveToTen = _netFiveToTen + double.parse(netFiveToTen[i]);
+    }
+   return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Date : ' + DateFormat('dd-MMM-yyyy').format(DateTime.now()),
+          style: TextStyle(
+            fontSize: 10,
+          )),
+      SizedBox(height: 2 * PdfPageFormat.cm),
+      Text('Port : ' + invoice.items[0].port,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      SizedBox(height: 0.8 * PdfPageFormat.cm),
+      Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('3/4 : ' + _netThreeToFour.toString(),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            Text('16 mm : ' + _netSixteen.toString(),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ]),
+      SizedBox(height: 0.1 * PdfPageFormat.cm),
+      Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('1/2 : ' + _netSixteen.toString(),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+            Text('5/10 : ' + _netFiveToTen.toString(),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          ]),
+      SizedBox(height: 0.8 * PdfPageFormat.cm),
+    ]);
+  }
 
   static Widget buildInvoice(InvoiceCrusherSale invoice) {
     final headers = [
@@ -84,10 +99,10 @@ class PdfCrusherSale {
         item.cft,
         item.rate,
         item.totalPrice,
-        item.threeToFour,
-        item.sixteen,
-        item.half,
-        item.fiveToTen,
+        (int.parse(item.threeToFour)!=0)?item.threeToFour:"",
+        (int.parse(item.sixteen)!=0)?item.sixteen:"",
+        (int.parse(item.half)!=0)? item.half:"",
+        (int.parse(item.fiveToTen)!=0)?item.fiveToTen:"",
         item.remarks
       ];
     }).toList();
@@ -116,6 +131,15 @@ class PdfCrusherSale {
   }
 
   static Widget buildTotal(InvoiceCrusherSale invoice) {
+
+    final netTotalList = invoice.items.map((item) => item.cft).toList();
+    final netSaleList = invoice.items.map((item) => item.totalPrice).toList();
+    double _netTotal = 0.0;
+    double _netSale = 0.0;
+    for (int i = 0; i < netTotalList.length; i++) {
+      _netTotal = _netTotal + double.parse(netTotalList[i]);
+      _netSale = _netSale + double.parse(netSaleList[i]);
+    }
     return Container(
         alignment: Alignment.centerRight,
         child: Row(children: [
@@ -127,11 +151,11 @@ class PdfCrusherSale {
                   children: [
                     buildText(
                         title: 'Total Stock',
-                        value: invoice.totalStock,
+                        value: _netTotal.toString(),
                         unite: true),
                     buildText(
                         title: "Total Sale",
-                        value: invoice.totalSale,
+                        value: _netSale.toString(),
                         unite: true)
                   ]))
         ]));

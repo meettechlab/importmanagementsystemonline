@@ -27,7 +27,9 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
 
   //final lcNumberEditingController = new TextEditingController();
   String? _lcNumber;
-  var portEditingController;
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
+  String? _chosenPort;
   var tonEditingController;
   var remarksEditingController;
   var truckCountEditingController;
@@ -47,8 +49,7 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
         new TextEditingController(text: widget.coalModel["truckCount"]);
     truckNumberEditingController =
         new TextEditingController(text: widget.coalModel["truckNumber"]);
-    portEditingController =
-        new TextEditingController(text: widget.coalModel["port"]);
+    _chosenPort = widget.coalModel["port"];
     tonEditingController =
         new TextEditingController(text: widget.coalModel["ton"]);
     remarksEditingController =
@@ -113,23 +114,16 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
       ),
     );
 
-    final portField = Container(
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
         width: MediaQuery.of(context).size.width / 4,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            autofocus: false,
-            controller: portEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Port cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              portEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
+        child: DropdownButtonFormField<String>(
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(
                 20,
@@ -137,8 +131,6 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
                 20,
                 15,
               ),
-              labelText: 'Port',
-              labelStyle: TextStyle(color: Colors.blue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -146,7 +138,18 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(color: Colors.blue),
               ),
-            )));
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
 
     final tonField = Container(
         width: MediaQuery.of(context).size.width / 4,
@@ -389,7 +392,7 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [tonField, portField],
+                      children: [tonField, portDropdown],
                     ),
                     SizedBox(
                       height: 20,
@@ -428,7 +431,7 @@ class _NonCoalUpdateScreenState extends State<NonCoalUpdateScreen> {
     coalModel.date =   DateFormat('yyyy-MM-dd').format(_date!);
     coalModel.invoice =_invoice.toString();
     coalModel.supplierName =     widget.coalModel["supplierName"];
-    coalModel.port =     portEditingController.text;
+    coalModel.port =    _chosenPort;
     coalModel.ton =     tonEditingController.text;
     coalModel.rate =    "0";
     coalModel.totalPrice =     "0";

@@ -24,7 +24,9 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
 
   //final lcNumberEditingController = new TextEditingController();
   String? _lcNumber;
-  var portEditingController;
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
+  String? _chosenPort;
   var cftEditingController;
   var remarksEditingController;
   var truckCountEditingController;
@@ -47,8 +49,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
         new TextEditingController(text: widget.lcModel["truckCount"]);
     truckNumberEditingController =
         new TextEditingController(text: widget.lcModel["truckNumber"]);
-    portEditingController =
-        new TextEditingController(text: widget.lcModel["port"]);
+    _chosenPort = widget.lcModel["port"];
     cftEditingController = new TextEditingController(text: widget.lcModel["cft"]);
     remarksEditingController =
         new TextEditingController(text: widget.lcModel["remarks"]);
@@ -58,6 +59,42 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -183,40 +220,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
               ),
             )));
 
-    final portField = Container(
-        width: MediaQuery.of(context).size.width / 4,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            autofocus: false,
-            controller: portEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Port cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              portEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
-              ),
-              labelText: 'Port',
-              labelStyle: TextStyle(color: Colors.blue),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            )));
+
 
     final cftField = Container(
         width: MediaQuery.of(context).size.width / 4,
@@ -399,7 +403,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [cftField, portField],
+                      children: [cftField, portDropdown],
                     ),
                     SizedBox(
                       height: 20,
@@ -438,7 +442,7 @@ class _NonStoneUpdateScreenState extends State<NonStoneUpdateScreen> {
       lcModel.truckCount =      truckCountEditingController.text;
       lcModel.truckNumber =    truckNumberEditingController.text;
       lcModel.invoice =  _invoice.toString();
-      lcModel.port =   portEditingController.text;
+      lcModel.port =   _chosenPort;
       lcModel.cft =   cftEditingController.text;
       lcModel.rate =   "0";
       lcModel.stockBalance =    _stock;

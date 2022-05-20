@@ -20,13 +20,15 @@ class NonCoalCreateScreen extends StatefulWidget {
 class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
   final _formKey = GlobalKey<FormState>();
   final lcNumberEditingController = new TextEditingController();
-  final portEditingController = new TextEditingController();
   final tonEditingController = new TextEditingController();
   final truckCountEditingController = new TextEditingController();
   final truckNumberEditingController = new TextEditingController();
   DateTime? _date;
   final _paymentTypes = ['Cash', 'Bank'];
   String? _chosenPayment;
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
+  String? _chosenPort;
 
   List<String> _companyNameList = [];
   String? _chosenCompanyName;
@@ -75,6 +77,43 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
+
     final truckCountField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
@@ -236,40 +275,7 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
               ),
             )));
 
-    final portField = Container(
-        width: MediaQuery.of(context).size.width / 4,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            autofocus: false,
-            controller: portEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Port cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              portEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
-              ),
-              labelText: 'Port',
-              labelStyle: TextStyle(color: Colors.blue),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            )));
+
 
     final tonField = Container(
         width: MediaQuery.of(context).size.width / 4,
@@ -407,7 +413,9 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if (doc["invoice"] == "1" && doc["name"] == newValue) {
-                      _chosenCompanyContact = doc["contact"];
+                     setState(() {
+                       _chosenCompanyContact = doc["contact"];
+                     });
                     }
                   }
                 });
@@ -455,7 +463,9 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if (doc["invoice"] == "1" && doc["contact"] == newValue) {
-                      _chosenCompanyName = doc["name"];
+                      setState(() {
+                        _chosenCompanyName = doc["name"];
+                      });
                     }
                   }
                 });
@@ -498,7 +508,7 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [nameDropdown, portField],
+                      children: [nameDropdown, portDropdown],
                     ),
                     SizedBox(
                       height: 20,
@@ -540,7 +550,7 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
     coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
     coalModel.invoice =   _invoice;
     coalModel.supplierName =   _chosenCompanyName!;
-    coalModel.port =    portEditingController.text;
+    coalModel.port =    _chosenPort;
     coalModel.ton =   tonEditingController.text;
     coalModel.rate =   "0";
     coalModel.totalPrice = "0";

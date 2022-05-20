@@ -100,7 +100,7 @@ class PdfStoneSale {
     double _netSale = 0.0;
     for (int i = 0; i < netTotalList.length; i++) {
       _netTotal = _netTotal + double.parse(netTotalList[i]);
-      _netSale = _netTotal + double.parse(netSaleList[i]);
+      _netSale = _netSale + double.parse(netSaleList[i]);
     }
 
     return Container(

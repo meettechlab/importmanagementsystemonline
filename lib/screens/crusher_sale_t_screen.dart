@@ -29,6 +29,11 @@ class _CrusherSaleTScreenState extends State<CrusherSaleTScreen> {
   double _oneToSix = 0.0;
   double _half = 0.0;
   double _fiveToTen = 0.0;
+
+  final TextEditingController searchController = TextEditingController();
+  bool search = false;
+  final TextEditingController yearSearchController = TextEditingController();
+  bool yearSearch = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -132,6 +137,98 @@ class _CrusherSaleTScreenState extends State<CrusherSaleTScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final nameSearchField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10)),
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: searchController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("name cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              searchController.text = value!;
+            },
+            onChanged: (value) {
+              setState(() {
+                search = true;
+                yearSearchController.clear();
+              });
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Search Company',
+              labelStyle: TextStyle(color: Colors.blue),
+              floatingLabelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
+    final yearSearchField = Container(
+        width: MediaQuery.of(context).size.width / 5,
+        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10)),
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: yearSearchController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("year cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              yearSearchController.text = value!;
+            },
+            onChanged: (value) {
+              setState(() {
+                yearSearch = true;
+                searchController.clear();
+              });
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'Search Year',
+              labelStyle: TextStyle(color: Colors.blue),
+              floatingLabelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -156,14 +253,27 @@ class _CrusherSaleTScreenState extends State<CrusherSaleTScreen> {
           individualStock(),
           Padding(
             padding: const EdgeInsets.all(8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                nameSearchField,
+                yearSearchField
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Divider(),
           ),
-          Expanded(child: _buildListView()),
+          Expanded(child: (search) ? _searchBuilder() : (yearSearch)? _yearSearchBuilder() : _buildListView()),
         ],
       ),
       floatingActionButton: _getFAB(),
     );
   }
+
+
 
   Widget individualStock() => Container(
         padding: const EdgeInsets.all(15),
@@ -273,6 +383,53 @@ class _CrusherSaleTScreenState extends State<CrusherSaleTScreen> {
 
   final CollectionReference _collectionReference =
   FirebaseFirestore.instance.collection("cSales");
+
+
+  Widget _yearSearchBuilder() {
+    return StreamBuilder<QuerySnapshot>(
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return ListView(
+              children: [
+                ...snapshot.data!.docs
+                    .where((QueryDocumentSnapshot<Object?> element) =>element["port"].toLowerCase()==("tamabil")&&
+                    element["year"].contains(yearSearchController.text))
+                    .map((QueryDocumentSnapshot<Object?> data) {
+                  return buildSingleItem(data);
+                })
+              ],
+            );
+          }
+        });
+  }
+
+  Widget _searchBuilder() {
+    return StreamBuilder<QuerySnapshot>(
+        stream: _collectionReference.orderBy("date", descending: true).snapshots().asBroadcastStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return ListView(
+              children: [
+                ...snapshot.data!.docs
+                    .where((QueryDocumentSnapshot<Object?> element) => element["port"].toLowerCase()==("tamabil") &&
+                    element["buyerName"].toString().toLowerCase().contains(searchController.text))
+                    .map((QueryDocumentSnapshot<Object?> data) {
+                  return buildSingleItem(data);
+                })
+              ],
+            );
+          }
+        });
+  }
 
   Widget _buildListView() {
     return StreamBuilder<QuerySnapshot>(
@@ -591,21 +748,67 @@ class _CrusherSaleTScreenState extends State<CrusherSaleTScreen> {
       for (var doc in querySnapshot.docs) {
         if(doc["port"].toLowerCase()==("tamabil")){
 
-          _list.add(new CrusherSaleItem(
-            doc["date"],
-            doc["truckCount"],
-            doc["port"],
-            doc["buyerName"],
-            doc["buyerContact"],
-            doc["cft"],
-            doc["rate"],
-            doc["price"],
-            doc["threeToFour"],
-            doc["oneToSix"],
-            doc["half"],
-            doc["fiveToTen"],
-            doc["remarks"],
-          ));
+          if(yearSearchController.text.isNotEmpty && searchController.text.isEmpty){
+            if( doc["year"].contains(yearSearchController.text)){
+
+              _list.add(new CrusherSaleItem(
+                doc["date"],
+                doc["truckCount"],
+                doc["port"],
+                doc["buyerName"],
+                doc["buyerContact"],
+                doc["cft"],
+                doc["rate"],
+                doc["price"],
+                doc["threeToFour"],
+                doc["oneToSix"],
+                doc["half"],
+                doc["fiveToTen"],
+                doc["remarks"],
+              ));
+            }
+          }
+          else if(searchController.text.isNotEmpty && yearSearchController.text.isEmpty){
+            if( doc["buyerName"].toString().toLowerCase().contains(searchController.text)){
+
+
+              _list.add(new CrusherSaleItem(
+                doc["date"],
+                doc["truckCount"],
+                doc["port"],
+                doc["buyerName"],
+                doc["buyerContact"],
+                doc["cft"],
+                doc["rate"],
+                doc["price"],
+                doc["threeToFour"],
+                doc["oneToSix"],
+                doc["half"],
+                doc["fiveToTen"],
+                doc["remarks"],
+              ));
+            }
+          }
+          else{
+
+            _list.add(new CrusherSaleItem(
+              doc["date"],
+              doc["truckCount"],
+              doc["port"],
+              doc["buyerName"],
+              doc["buyerContact"],
+              doc["cft"],
+              doc["rate"],
+              doc["price"],
+              doc["threeToFour"],
+              doc["oneToSix"],
+              doc["half"],
+              doc["fiveToTen"],
+              doc["remarks"],
+            ));
+          }
+
+
 
 
 

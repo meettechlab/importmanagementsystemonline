@@ -4,8 +4,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:importmanagementsystemonline/screens/archive.dart';
+import 'package:importmanagementsystemonline/screens/coal_sale_screen.dart';
+import 'package:importmanagementsystemonline/screens/crusher_sale_s_screen.dart';
+import 'package:importmanagementsystemonline/screens/crusher_sale_t_screen.dart';
+import 'package:importmanagementsystemonline/screens/crusher_stock_s_screen.dart';
+import 'package:importmanagementsystemonline/screens/crusher_stock_t_screen.dart';
 import 'package:importmanagementsystemonline/screens/dashboard.dart';
 import 'package:importmanagementsystemonline/screens/login_screen.dart';
+import 'package:importmanagementsystemonline/screens/stone_sale_screen.dart';
 import 'package:importmanagementsystemonline/splash_screen.dart';
 
 

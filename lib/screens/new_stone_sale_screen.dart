@@ -575,7 +575,9 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if(doc["invoice"] == "1" && doc["contact"] == newValue ){
+                    setState(() {
                       _chosenCompanyName = doc["name"];
+                    });
                     }
                   }
                 });
@@ -623,7 +625,9 @@ class _NewStoneSaleScreenState extends State<NewStoneSaleScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if(doc["invoice"] == "1" && doc["name"] == newValue ){
-                      _chosenCompanyContact = doc["contact"];
+                     setState(() {
+                       _chosenCompanyContact = doc["contact"];
+                     });
                     }
                   }
                 });

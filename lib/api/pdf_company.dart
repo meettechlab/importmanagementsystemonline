@@ -52,6 +52,8 @@ class PdfCompany {
       ]);
 
   static Widget buildInvoice(InvoiceCompany invoice) {
+
+
     final headers = [
       'Date',
       'Credit',
@@ -63,15 +65,27 @@ class PdfCompany {
     ];
 
     final data = invoice.items.map((item) {
-      return [
-        item.date,
-        item.credit,
-        item.debit,
-        item.paymentType,
-        item.rate,
-        item.quantity,
-        item.remarks
-      ];
+      if(item.remarks.toLowerCase().contains("coal")){
+        return [
+          item.date,
+          item.credit,
+          item.debit,
+          item.paymentType,
+          item.rate,
+          item.quantity + " MT",
+          item.remarks
+        ];
+      }else{
+        return [
+          item.date,
+          item.credit,
+          item.debit,
+          item.paymentType,
+          item.rate,
+          item.quantity,
+          item.remarks
+        ];
+      }
     }).toList();
     return Table.fromTextArray(
       headers: headers,

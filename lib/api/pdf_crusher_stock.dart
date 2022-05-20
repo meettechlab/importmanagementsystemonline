@@ -66,10 +66,10 @@ class PdfCrusherStock {
         item.cft,
         item.rate,
         item.totalPrice,
-        item.threeToFour,
-        item.sixteen,
-        item.half,
-        item.fiveToTen,
+        (item.threeToFour!="0")?item.threeToFour:"",
+        (item.sixteen!="0")?item.sixteen:"0",
+        ( item.half!="0")? item.half:"0",
+        (item.fiveToTen!="0")?item.fiveToTen:"0",
         item.totalWeight,
         item.extra,
         item.remarks
@@ -108,7 +108,7 @@ class PdfCrusherStock {
     double _netSale = 0.0;
     for (int i = 0; i < netTotalList.length; i++) {
       _netTotal = _netTotal + double.parse(netTotalList[i]);
-      _netSale = _netTotal + double.parse(netSaleList[i]);
+      _netSale = _netSale + double.parse(netSaleList[i]);
     }
 
     return Container(

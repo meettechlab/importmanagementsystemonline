@@ -35,7 +35,7 @@ class _SingleCoalUpdateScreenState extends State<SingleCoalUpdateScreen> {
   int? _count;
   int? _invoice;
 
-  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
   String? _chosenPort;
 
   @override

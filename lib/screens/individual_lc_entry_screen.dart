@@ -44,7 +44,7 @@ class _IndividualLCEntryScreenState extends State<IndividualLCEntryScreen> {
   int _invoice = 2;
 
 
-  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
   String? _chosenPort;
 
   @override

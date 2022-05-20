@@ -24,7 +24,6 @@ class _NonCoalEntryScreenState extends State<NonCoalEntryScreen> {
 
   //final lcNumberEditingController = new TextEditingController();
   String? _lcNumber;
-  final portEditingController = new TextEditingController();
   final tonEditingController = new TextEditingController();
   final remarksEditingController = new TextEditingController();
   final truckCountEditingController = new TextEditingController();
@@ -34,16 +33,56 @@ class _NonCoalEntryScreenState extends State<NonCoalEntryScreen> {
   int? _count;
   int _invoice = 1;
 
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
+  String? _chosenPort;
+
   @override
   void initState() {
     super.initState();
     _process = false;
     _count = 1;
+    _chosenPort = widget.coalModel["port"];
 
   }
 
   @override
   Widget build(BuildContext context) {
+    DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            ),
+            items: _portTypes.map(buildMenuItem).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final pickDate = Container(
       child: Row(
         children: [
@@ -98,40 +137,7 @@ class _NonCoalEntryScreenState extends State<NonCoalEntryScreen> {
       ),
     );
 
-    final portField = Container(
-        width: MediaQuery.of(context).size.width / 4,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            autofocus: false,
-            controller: portEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Port cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              portEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(
-                20,
-                15,
-                20,
-                15,
-              ),
-              labelText: 'Port',
-              labelStyle: TextStyle(color: Colors.blue),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-            )));
+
 
     final tonField = Container(
         width: MediaQuery.of(context).size.width / 4,
@@ -374,7 +380,7 @@ class _NonCoalEntryScreenState extends State<NonCoalEntryScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [tonField, portField],
+                      children: [tonField, portDropdown],
                     ),
                     SizedBox(
                       height: 20,
@@ -427,7 +433,7 @@ class _NonCoalEntryScreenState extends State<NonCoalEntryScreen> {
     coalModel.date =   DateFormat('yyyy-MM-dd').format(_date!);
     coalModel.invoice =    _invoice.toString();
     coalModel.supplierName =   widget.coalModel["supplierName"];
-    coalModel.port =    portEditingController.text;
+    coalModel.port =   _chosenPort;
     coalModel.ton = tonEditingController.text;
     coalModel.rate =     "0";
     coalModel.totalPrice =   "0";

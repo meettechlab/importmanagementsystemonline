@@ -27,7 +27,6 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
   String? _lcNumber;
   final truckCountEditingController = new TextEditingController();
   final truckNumberEditingController = new TextEditingController();
-  final portEditingController = new TextEditingController();
   final cftEditingController = new TextEditingController();
   final rateEditingController = new TextEditingController();
   final sellerNameEditingController = new TextEditingController();
@@ -43,6 +42,10 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
   bool? _process;
   int? _count;
   int _invoice = 1;
+
+
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
+  String? _chosenPort;
 
   @override
   void initState() {
@@ -180,23 +183,17 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
               ),
             )));
 
-    final portField = Container(
+
+    DropdownMenuItem<String> buildMenuPort(String item) => DropdownMenuItem(
+        value: item,
+        child: Text(
+          item,
+          style: TextStyle(color: Colors.blue),
+        ));
+
+    final portDropdown = Container(
         width: MediaQuery.of(context).size.width / 4,
-        child: TextFormField(
-            cursorColor: Colors.blue,
-            autofocus: false,
-            controller: portEditingController,
-            keyboardType: TextInputType.name,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return ("Port cannot be empty!!");
-              }
-              return null;
-            },
-            onSaved: (value) {
-              portEditingController.text = value!;
-            },
-            textInputAction: TextInputAction.next,
+        child: DropdownButtonFormField<String>(
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(
                 20,
@@ -204,8 +201,6 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
                 20,
                 15,
               ),
-              labelText: 'Port',
-              labelStyle: TextStyle(color: Colors.blue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -213,8 +208,18 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(color: Colors.blue),
               ),
-            )));
-
+            ),
+            items: _portTypes.map(buildMenuPort).toList(),
+            hint: Text(
+              'Select Port',
+              style: TextStyle(color: Colors.blue),
+            ),
+            value: _chosenPort,
+            onChanged: (newValue) {
+              setState(() {
+                _chosenPort = newValue;
+              });
+            }));
     final cftField = Container(
         width: MediaQuery.of(context).size.width / 4,
         child: TextFormField(
@@ -687,7 +692,7 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [cftField, portField],
+                      children: [cftField, portDropdown],
                     ),
 
 
@@ -743,7 +748,7 @@ class _NonStoneEntryScreenState extends State<NonStoneEntryScreen> {
     lcModel.truckCount =      truckCountEditingController.text;
     lcModel.truckNumber =    truckNumberEditingController.text;
     lcModel.invoice =  _invoice.toString();
-    lcModel.port =   portEditingController.text;
+    lcModel.port =   _chosenPort;
     lcModel.cft =   cftEditingController.text;
       lcModel.rate =   "0";
     lcModel.stockBalance =    _stock;

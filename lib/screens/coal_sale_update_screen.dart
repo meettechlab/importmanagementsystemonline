@@ -37,8 +37,7 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
   int? _count;
   int? _invoice;
 
-
-  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
   String? _chosenPort;
 
   List<String> _companyNameList = [];
@@ -564,7 +563,9 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if(doc["invoice"] == "1" && doc["contact"] == newValue ){
-                      _chosenCompanyName = doc["name"];
+                      setState(() {
+                        _chosenCompanyName = doc["name"];
+                      });
                     }
                   }
                 });
@@ -612,7 +613,9 @@ class _CoalSaleUpdateScreenState extends State<CoalSaleUpdateScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if(doc["invoice"] == "1" && doc["name"] == newValue ){
-                      _chosenCompanyContact = doc["contact"];
+                      setState(() {
+                        _chosenCompanyContact = doc["contact"];
+                      });
                     }
                   }
                 });

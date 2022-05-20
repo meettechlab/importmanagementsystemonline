@@ -37,6 +37,7 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
   bool search = false;
   final TextEditingController yearSearchController = TextEditingController();
   bool yearSearch = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -407,8 +408,8 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
             return ListView(
               children: [
                 ...snapshot.data!.docs
-                    .where((QueryDocumentSnapshot<Object?> element) =>
-                    element["year"].contains(yearSearchController.text))
+                    .where((QueryDocumentSnapshot<Object?> element) =>element["lc"].toString().toLowerCase() == "sale" &&
+            element["year"].contains(yearSearchController.text))
                     .map((QueryDocumentSnapshot<Object?> data) {
                   return buildSingleItem(data);
                 })
@@ -812,24 +813,63 @@ class _CoalSaleScreenState extends State<CoalSaleScreen> {
       for (var doc in querySnapshot.docs) {
         if(doc["lc"].toString().toLowerCase() == "sale"){
 
+          if(yearSearchController.text.isNotEmpty && searchController.text.isEmpty){
+            if( doc["year"].contains(yearSearchController.text)){
+              _list.add(new CoalItem(
+                doc["date"],
+                doc["truckCount"],
+                doc["truckNumber"],
+                doc["port"],
+                doc["supplierName"],
+                doc["ton"],
+                doc["rate"],
+                doc["totalPrice"],
+                doc["paymentType"],
+                doc["paymentInformation"],
+                doc["remarks"],
+              ));
+              _docList.add(doc);
+            }
+          }
+          else if(searchController.text.isNotEmpty && yearSearchController.text.isEmpty){
+            if( doc["supplierName"].toString().toLowerCase().contains(searchController.text)){
+
+              _list.add(new CoalItem(
+                doc["date"],
+                doc["truckCount"],
+                doc["truckNumber"],
+                doc["port"],
+                doc["supplierName"],
+                doc["ton"],
+                doc["rate"],
+                doc["totalPrice"],
+                doc["paymentType"],
+                doc["paymentInformation"],
+                doc["remarks"],
+              ));
 
 
-          _list.add(new CoalItem(
-            doc["date"],
-            doc["truckCount"],
-            doc["truckNumber"],
-            doc["port"],
-            doc["supplierName"],
-            doc["ton"],
-            doc["rate"],
-            doc["totalPrice"],
-            doc["paymentType"],
-            doc["paymentInformation"],
-            doc["remarks"],
-          ));
+              _docList.add(doc);
+            }
+          }
+          else{
+            _list.add(new CoalItem(
+              doc["date"],
+              doc["truckCount"],
+              doc["truckNumber"],
+              doc["port"],
+              doc["supplierName"],
+              doc["ton"],
+              doc["rate"],
+              doc["totalPrice"],
+              doc["paymentType"],
+              doc["paymentInformation"],
+              doc["remarks"],
+            ));
 
 
-          _docList.add(doc);
+            _docList.add(doc);
+          }
 
         }
       }

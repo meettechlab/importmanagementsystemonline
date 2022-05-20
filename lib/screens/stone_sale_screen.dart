@@ -599,7 +599,46 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
+        if(yearSearchController.text.isNotEmpty && searchController.text.isEmpty){
+          if( doc["year"].contains(yearSearchController.text)){
+            _list.add(new StoneSaleItem(
+              doc["date"],
+              doc["truckCount"],
+              doc["truckNumber"],
+              doc["port"],
+              doc["buyerName"],
+              doc["buyerContact"],
+              doc["cft"],
+              doc["rate"],
+              doc["totalSale"],
+              doc["paymentType"],
+              doc["paymentInformation"],
+              doc["remarks"],
+            ));
+            _docList.add(doc);
+          }
+        }
+        else if(searchController.text.isNotEmpty && yearSearchController.text.isEmpty){
+          if( doc["buyerName"].toString().toLowerCase().contains(searchController.text)){
 
+            _list.add(new StoneSaleItem(
+              doc["date"],
+              doc["truckCount"],
+              doc["truckNumber"],
+              doc["port"],
+              doc["buyerName"],
+              doc["buyerContact"],
+              doc["cft"],
+              doc["rate"],
+              doc["totalSale"],
+              doc["paymentType"],
+              doc["paymentInformation"],
+              doc["remarks"],
+            ));
+            _docList.add(doc);
+          }
+        }
+        else{
           _list.add(new StoneSaleItem(
             doc["date"],
             doc["truckCount"],
@@ -614,13 +653,13 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
             doc["paymentInformation"],
             doc["remarks"],
           ));
-
           _docList.add(doc);
-
+        }
       }
       final invoice = InvoiceStoneSale(_list);
 
       final pdfFile =  PdfStoneSale.generate(invoice);
+      _list.clear();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -570,7 +570,9 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if(doc["invoice"] == "1" && doc["name"] == newValue ){
-                      _chosenCompanyContact = doc["contact"];
+                      setState(() {
+                        _chosenCompanyContact = doc["contact"];
+                      });
                     }
                   }
                 });
@@ -619,7 +621,9 @@ class _CrusherSaleEntryScreenState extends State<CrusherSaleEntryScreen> {
                     .then((QuerySnapshot querySnapshot) {
                   for (var doc in querySnapshot.docs) {
                     if(doc["invoice"] == "1" && doc["contact"] == newValue ){
-                      _chosenCompanyName = doc["name"];
+                     setState(() {
+                       _chosenCompanyName = doc["name"];
+                     });
                     }
                   }
                 });

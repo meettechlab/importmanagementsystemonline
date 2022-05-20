@@ -34,7 +34,7 @@ class _SingleCoalEntryScreenState extends State<SingleCoalEntryScreen> {
   int? _count;
   int _invoice=2;
 
-  final _portTypes = ['Shutarkandi', 'Tamabil', 'Botchora', 'Bhairavghat'];
+  final _portTypes = ['Shutarkandi', 'Tamabil', 'Borchora','Baghil' ,'Bhairavghat',];
   String? _chosenPort;
 
   @override
