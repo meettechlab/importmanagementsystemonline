@@ -245,8 +245,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       if (userEditingController.text == "admin" &&
           passwordEditingController.text == "admin") {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Dashboard()));
+         Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Dashboard()),
+                (route) => false);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             backgroundColor: Colors.green,
             content: Text("Login Successful!!")));

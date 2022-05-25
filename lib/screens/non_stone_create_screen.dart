@@ -68,25 +68,61 @@ class _NonStoneCreateScreenState extends State<NonStoneCreateScreen> {
       }
     });
 
-    FirebaseFirestore.instance
-        .collection('nonstone')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        final _docList = [];
-        _docList.add(doc);
-
-        if (_docList.isNotEmpty) {
-          setState(() {
-            _lcNumber = int.parse(_docList.last["lcNumber"]) + 1;
-          });
-        }
-      }
-    });
+    // FirebaseFirestore.instance
+    //     .collection('nonstone')
+    //     .get()
+    //     .then((QuerySnapshot querySnapshot) {
+    //   for (var doc in querySnapshot.docs) {
+    //     final _docList = [];
+    //     _docList.add(doc);
+    //
+    //     if (_docList.isNotEmpty) {
+    //       setState(() {
+    //         _lcNumber = int.parse(_docList.last["lcNumber"]) + 1;
+    //       });
+    //     }
+    //   }
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
+    final lcNumberField = Container(
+        width: MediaQuery.of(context).size.width / 4,
+        child: TextFormField(
+            cursorColor: Colors.blue,
+            autofocus: false,
+            controller: lcNumberEditingController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return ("LC Number cannot be empty!!");
+              }
+              return null;
+            },
+            onSaved: (value) {
+              lcNumberEditingController.text = value!;
+            },
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(
+                20,
+                15,
+                20,
+                15,
+              ),
+              labelText: 'LC Number',
+              labelStyle: TextStyle(color: Colors.blue),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.blue),
+              ),
+            )));
+
+
     DropdownMenuItem<String> buildMenuPort(String item) => DropdownMenuItem(
         value: item,
         child: Text(
@@ -543,7 +579,14 @@ class _NonStoneCreateScreenState extends State<NonStoneCreateScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    pickDate,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        lcNumberField,
+                        pickDate,
+                      ],
+                    ),
+
                     SizedBox(
                       height: 20,
                     ),
@@ -589,54 +632,85 @@ class _NonStoneCreateScreenState extends State<NonStoneCreateScreen> {
     );
   }
 
-  void AddData() async {
+
+
+
+  void AddData()  async{
     if (_formKey.currentState!.validate() &&
         _date != null &&
         _chosenCompanyContact != null &&
-        _chosenCompanyName != null) {
-      final ref = FirebaseFirestore.instance.collection("nonstone").doc();
-      final _stock = cftEditingController.text;
-      final _invoice = "1";
-      //final _purchaseBalance = (double.parse(cftEditingController.text) * double.parse(rateEditingController.text)).toString();
-      //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
-      NonStone lcModel = NonStone();
-     lcModel.date =      DateFormat('yyyy-MM-dd').format(_date!);
-    lcModel.truckCount =   truckCountEditingController.text;
-    lcModel.truckNumber =    truckNumberEditingController.text;
-    lcModel.invoice =    _invoice;
-    lcModel.port =      _chosenPort;
-    lcModel.cft =      cftEditingController.text;
-    lcModel.rate =   "0";
-    lcModel.stockBalance =    _stock;
-    lcModel.sellerName =   _chosenCompanyName!;
-    lcModel.sellerContact =    _chosenCompanyContact!;
-    lcModel.paymentType =     "0";
-    lcModel.paymentInformation =      "0";
-    lcModel.purchaseBalance =     "0";
-    lcModel.lcOpenPrice =    "0";
-    lcModel.dutyCost =    "0";
-    lcModel.speedMoney =    "0";
-    lcModel.remarks =    remarksEditingController.text;
-    lcModel.lcNumber =    _lcNumber.toString();
-    lcModel.totalBalance =      "0";
-    lcModel.year =     DateFormat('MMM-yyyy').format(_date!);
-    lcModel.docID =ref.id;
-await ref.set(lcModel.toMap());
+        _chosenCompanyName != null && _chosenPort != null) {
+      bool _unique = true;
+
       FirebaseFirestore.instance
           .collection('nonstone')
           .get()
           .then((QuerySnapshot querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          if(doc.id == ref.id){
+          if(doc["lcNumber"].toString().toLowerCase() == lcNumberEditingController.text.toString().toLowerCase() ){
+            _unique = false;
+          }
+        }
 
-            setState(() {
-              _process = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Added!!")));
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => NonStoneHistoryScreen(lcModel: doc)));       }
+        if (_unique) {
+          final ref = FirebaseFirestore.instance.collection("nonstone").doc();
+          final _stock = cftEditingController.text;
+          final _invoice = "1";
+          //final _purchaseBalance = (double.parse(cftEditingController.text) * double.parse(rateEditingController.text)).toString();
+          //final _totalBalance = (double.parse(_purchaseBalance) + double.parse(lcOpenPriceEditingController.text) + double.parse(dutyCostEditingController.text) + double.parse(speedMoneyEditingController.text)).toString();
+          NonStone lcModel = NonStone();
+          lcModel.date =      DateFormat('yyyy-MM-dd').format(_date!);
+          lcModel.truckCount =   truckCountEditingController.text;
+          lcModel.truckNumber =    truckNumberEditingController.text;
+          lcModel.invoice =    _invoice;
+          lcModel.port =      _chosenPort;
+          lcModel.cft =      cftEditingController.text;
+          lcModel.rate =   "0";
+          lcModel.stockBalance =    _stock;
+          lcModel.sellerName =   _chosenCompanyName!;
+          lcModel.sellerContact =    _chosenCompanyContact!;
+          lcModel.paymentType =     "0";
+          lcModel.paymentInformation =      "0";
+          lcModel.purchaseBalance =     "0";
+          lcModel.lcOpenPrice =    "0";
+          lcModel.dutyCost =    "0";
+          lcModel.speedMoney =    "0";
+          lcModel.remarks =    remarksEditingController.text;
+          lcModel.lcNumber =    lcNumberEditingController.text;
+          lcModel.totalBalance =      "0";
+          lcModel.year =     DateFormat('MMM-yyyy').format(_date!);
+          lcModel.docID =ref.id;
+           ref.set(lcModel.toMap());
+
+          FirebaseFirestore.instance
+              .collection('nonstone')
+              .get()
+              .then((QuerySnapshot querySnapshot) {
+            for (var doc in querySnapshot.docs) {
+              if (doc.id == ref.id) {
+                setState(() {
+                  _process = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: Colors.green,
+                    content: Text("Entry Added!!")));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            NonStoneHistoryScreen(lcModel: doc)));
+              }
+            }
+          });
+        }else{
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(
+                  "This LC name is already exist. Please create an unique one!!")));
+          setState(() {
+            _process = false;
+            _count = 1;
+          });
         }
       });
     } else {

@@ -18,8 +18,10 @@ class LCListScreen extends StatefulWidget {
 }
 
 class _LCListScreenState extends State<LCListScreen> {
-  double _totalStock = 0.0;
-  int _totalAmount = 0;
+  double _totalStockTamabil = 0.0;
+  double _totalStockShutarkandi= 0.0;
+  int _totalAmountTamabil = 0;
+  int _totalAmountShutarkandi = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -30,10 +32,17 @@ class _LCListScreenState extends State<LCListScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-          setState(() {
-            _totalStock = double.parse((_totalStock + double.parse(doc["cft"])).toStringAsFixed(3));
-            _totalAmount = (_totalAmount + double.parse(doc["totalBalance"])).floor();
-          });
+         if(doc["port"].toString().toLowerCase()=="tamabil"){
+           setState(() {
+             _totalStockTamabil = double.parse((_totalStockTamabil + double.parse(doc["cft"])).toStringAsFixed(3));
+             _totalAmountTamabil = (_totalAmountTamabil + double.parse(doc["totalBalance"])).floor();
+           });
+         }else if(doc["port"].toString().toLowerCase()=="shutarkandi"){
+           setState(() {
+             _totalStockShutarkandi = double.parse((_totalStockShutarkandi + double.parse(doc["cft"])).toStringAsFixed(3));
+             _totalAmountShutarkandi = (_totalAmountShutarkandi + double.parse(doc["totalBalance"])).floor();
+           });
+         }
       }
     });
 
@@ -42,9 +51,16 @@ class _LCListScreenState extends State<LCListScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        setState(() {
-          _totalStock = double.parse((_totalStock - double.parse(doc["cft"])).toStringAsFixed(3));
-        });
+        if(doc["port"].toString().toLowerCase()=="tamabil"){
+          setState(() {
+            _totalStockTamabil = double.parse((_totalStockTamabil - double.parse(doc["cft"])).toStringAsFixed(3));
+          });
+        }else if(doc["port"].toString().toLowerCase()=="shutarkandi"){
+          setState(() {
+            _totalStockShutarkandi = double.parse((_totalStockShutarkandi - double.parse(doc["cft"])).toStringAsFixed(3));
+          });
+        }
+
       }
     });
   }
@@ -78,11 +94,27 @@ class _LCListScreenState extends State<LCListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Stock : $_totalStock CFT",
+                  "Tamabil Stock : $_totalStockTamabil CFT",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
                 Text(
-                  "Total Purchase : $_totalAmount TK",
+                  "Tamabil Total Purchase : $_totalAmountTamabil TK",
+                  style: TextStyle(color: Colors.red, fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Shutarkandi Stock : $_totalStockShutarkandi Ton",
+                  style: TextStyle(color: Colors.red, fontSize: 18),
+                ),
+                Text(
+                  "Shutarkandi Total Purchase : $_totalAmountShutarkandi TK",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
               ],

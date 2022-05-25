@@ -58,25 +58,26 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
       }
     });
 
-    FirebaseFirestore.instance
-        .collection('noncoal')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      for (var doc in querySnapshot.docs) {
-        final _docList = [];
-        _docList.add(doc);
-
-        if (_docList.isNotEmpty) {
-          setState(() {
-            _lcNumber = int.parse(_docList.last["lc"]) + 1;
-          });
-        }
-      }
-    });
+    // FirebaseFirestore.instance
+    //     .collection('noncoal')
+    //     .get()
+    //     .then((QuerySnapshot querySnapshot) {
+    //   for (var doc in querySnapshot.docs) {
+    //     final _docList = [];
+    //     _docList.add(doc);
+    //
+    //     if (_docList.isNotEmpty) {
+    //       setState(() {
+    //         _lcNumber = int.parse(_docList.last["lc"]) + 1;
+    //       });
+    //     }
+    //   }
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
+
     DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
         value: item,
         child: Text(
@@ -502,7 +503,13 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    pickDate,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        lcNumberField,
+                        pickDate,
+                      ],
+                    ),
                     SizedBox(
                       height: 20,
                     ),
@@ -538,50 +545,76 @@ class _NonCoalCreateScreenState extends State<NonCoalCreateScreen> {
     );
   }
 
+
   void AddData() async {
     if (_formKey.currentState!.validate() &&
         _date != null &&
-        _chosenCompanyName != null) {
-      final ref = FirebaseFirestore.instance.collection("noncoal").doc();
-      final _invoice = "1";
-
-      NonCoal coalModel = NonCoal();
-      coalModel.lc = _lcNumber.toString();
-    coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
-    coalModel.invoice =   _invoice;
-    coalModel.supplierName =   _chosenCompanyName!;
-    coalModel.port =    _chosenPort;
-    coalModel.ton =   tonEditingController.text;
-    coalModel.rate =   "0";
-    coalModel.totalPrice = "0";
-    coalModel.paymentType =    "0";
-    coalModel.paymentInformation =   "0";
-    coalModel.credit =  "0";
-    coalModel.debit =  "0";
-    coalModel.remarks =   "0";
-    coalModel.year =    DateFormat('MMM-yyyy').format(_date!);
-    coalModel.truckCount = truckCountEditingController.text;
-    coalModel.truckNumber =    truckNumberEditingController.text;
-    coalModel.contact =     _chosenCompanyContact!;
-    coalModel.docID = ref.id;
-      await ref.set(coalModel.toMap());
-
+        _chosenCompanyContact != null &&
+        _chosenCompanyName != null && _chosenPort !=null) {
+      bool _unique = true;
       FirebaseFirestore.instance
           .collection('noncoal')
           .get()
           .then((QuerySnapshot querySnapshot) {
         for (var doc in querySnapshot.docs) {
-          if(doc.id == ref.id){
+          if (doc["lc"].toString().toLowerCase() ==
+              lcNumberEditingController.text.toString().toLowerCase()) {
+            _unique = false;
+          }
+        }
 
-            setState(() {
-              _process = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.green,content: Text("Entry Added!!")));
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        NonCoalHistoryScreen(coalModel: doc)));          }
+        if (_unique) {
+          final ref = FirebaseFirestore.instance.collection("noncoal").doc();
+          final _invoice = "1";
+          NonCoal coalModel = NonCoal();
+          coalModel.lc = lcNumberEditingController.text;
+          coalModel.date = DateFormat('yyyy-MM-dd').format(_date!);
+          coalModel.invoice =   _invoice;
+          coalModel.supplierName =   _chosenCompanyName!;
+          coalModel.port =    _chosenPort;
+          coalModel.ton =   tonEditingController.text;
+          coalModel.rate =   "0";
+          coalModel.totalPrice = "0";
+          coalModel.paymentType =    "0";
+          coalModel.paymentInformation =   "0";
+          coalModel.credit =  "0";
+          coalModel.debit =  "0";
+          coalModel.remarks =   "0";
+          coalModel.year =    DateFormat('MMM-yyyy').format(_date!);
+          coalModel.truckCount = truckCountEditingController.text;
+          coalModel.truckNumber =    truckNumberEditingController.text;
+          coalModel.contact =     _chosenCompanyContact!;
+          coalModel.docID = ref.id;
+           ref.set(coalModel.toMap());
+          FirebaseFirestore.instance
+              .collection('noncoal')
+              .get()
+              .then((QuerySnapshot querySnapshot) {
+            for (var doc in querySnapshot.docs) {
+              if (doc.id == ref.id) {
+                setState(() {
+                  _process = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: Colors.green,
+                    content: Text("Entry Added!!")));
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            NonCoalHistoryScreen(coalModel: doc)));
+              }
+            }
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(
+                  "This LC name is already exist. Please create an unique one!!")));
+          setState(() {
+            _process = false;
+            _count = 1;
+          });
         }
       });
     } else {

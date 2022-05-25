@@ -22,8 +22,10 @@ class StoneSaleScreen extends StatefulWidget {
 }
 
 class _StoneSaleScreenState extends State<StoneSaleScreen> {
-  double _totalStock = 0.0;
-  int _totalAmount = 0;
+  double _totalStockTamabil = 0.0;
+  int _totalAmountTamabil = 0;
+  double _totalStockShutarkandi = 0.0;
+  int _totalAmountShutarkandi = 0;
   final TextEditingController searchController = TextEditingController();
   bool search = false;
   final TextEditingController yearSearchController = TextEditingController();
@@ -38,10 +40,18 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        setState(() {
-          _totalStock =
-         double.parse( (double.parse(_totalStock.toString()) + double.parse(doc["cft"])).toStringAsFixed(3));
-        });
+        if(doc["port"].toString().toLowerCase()=="tamabil"){
+          setState(() {
+            _totalStockTamabil =
+                double.parse( (double.parse(_totalStockTamabil.toString()) + double.parse(doc["cft"])).toStringAsFixed(3));
+          });
+        }else if(doc["port"].toString().toLowerCase()=="shutarkandi"){
+          setState(() {
+            _totalStockShutarkandi =
+                double.parse( (double.parse(_totalStockShutarkandi.toString()) + double.parse(doc["cft"])).toStringAsFixed(3));
+          });
+        }
+
       }
     });
     FirebaseFirestore.instance
@@ -49,12 +59,22 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        setState(() {
-          _totalStock =
-      double.parse(    (double.parse(_totalStock.toString()) - double.parse(doc["cft"])).toStringAsFixed(3));
-          _totalAmount = (double.parse(_totalAmount.toString()) +
-              double.parse(doc["totalSale"])).floor();
-        });
+        if(doc["port"].toString().toLowerCase()=="tamabil"){
+          setState(() {
+            _totalStockTamabil =
+                double.parse(    (double.parse(_totalStockTamabil.toString()) - double.parse(doc["cft"])).toStringAsFixed(3));
+            _totalAmountTamabil = (double.parse(_totalAmountTamabil.toString()) +
+                double.parse(doc["totalSale"])).floor();
+          });
+        }else if(doc["port"].toString().toLowerCase()=="shutarkandi"){
+          setState(() {
+            _totalStockShutarkandi =
+                double.parse(    (double.parse(_totalStockShutarkandi.toString()) - double.parse(doc["cft"])).toStringAsFixed(3));
+            _totalAmountShutarkandi = (double.parse(_totalAmountShutarkandi.toString()) +
+                double.parse(doc["totalSale"])).floor();
+          });
+        }
+
       }
     });
   }
@@ -228,13 +248,30 @@ class _StoneSaleScreenState extends State<StoneSaleScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Stock : $_totalStock CFT",
+                  "Tamabil Stock : $_totalStockTamabil CFT",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
                 nameSearchField,
                 yearSearchField,
                 Text(
-                  "Total Sale : $_totalAmount TK",
+                  "Tamabil Total Sale : $_totalAmountTamabil TK",
+                  style: TextStyle(color: Colors.red, fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Shutarkandi Stock : $_totalStockShutarkandi CFT",
+                  style: TextStyle(color: Colors.red, fontSize: 18),
+                ),
+
+                Text(
+                  "Shutarkandi Total Sale : $_totalAmountShutarkandi TK",
                   style: TextStyle(color: Colors.red, fontSize: 18),
                 ),
               ],
